@@ -1,0 +1,16 @@
+﻿{
+	"template" : {
+		"displayname" : "Paint Gadget",
+		"versionstr" : "0.1",
+		"archive" : "circlegadget.zip",
+		"defaultname" : "PaintGadget",
+		"renames" : [".c",".h",".txt","makefile"],
+		"comment" :
+"Prepare a BOOPSI Gadget class that draws circles, resize, reacts to clicks, send update events, and can be modifed by changing attribs.\nThe same code will compile an external .gadget binary that can be shared by intuition, with a separated test executable using it,\nbut also a single test executable that links statically the same test and the same gadget class, keeping it private.\n\n You should develop with the static project which is easy to debug, and when done eventually publish the shared .gadget version.\n Also, to update shared binaries, quit all uses, then type \"Avail flush\", or previous version will stay in memory.",
+		"keys" : [
+			{ "type":"defbool","displayname":"layers.lib sub-cliping","id":"%USESUBCLIPPING%","def":true},
+			{}
+		]
+		
+	}
+}

@@ -1,0 +1,92 @@
+# this is the "smakefile" for Amiga SASC6.5 compiler
+# Update your compiler os-include and os-lib directories with recent NDK3.2 include and lib,
+# doing an overriding copy.
+# just get in the directory and use command this file with command "smake"
+# PARMS=REGISTER
+SCOPTS = OPTIMIZE CPU=68000 NOSTKCHK STRMERGE UNSCHAR data=far
+SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1
+LIBS = LIB:sc.lib
+
+SLO    = SC SD ND
+BUILDDIR = build-sasc
+AFLAGS = -dSASASM=1
+
+BINARIES = $(BUILDDIR)/basename.class $(BUILDDIR)/basenameTest $(BUILDDIR)Static/basenameTest_static
+
+HEADERS = class_basename.h class_basename_private.h  minialib.h
+
+CLASSMODELOBJS = \
+ $(BUILDDIR)/classinit.s.o \
+ $(BUILDDIR)/class_basename_lib.c.o \
+ $(BUILDDIR)/class_basename_dispatch.c.o \
+ $(BUILDDIR)/class_basename_attribs.c.o
+
+CLASSMODELOBJSSTATIC = \
+ $(BUILDDIR)Static/class_basename_lib.c.o \
+ $(BUILDDIR)Static/class_basename_dispatch.c.o \
+ $(BUILDDIR)Static/class_basename_attribs.c.o
+
+all: $(BINARIES)
+
+# - - - - - - - - -
+
+$(BUILDDIR):
+	-makedir $(BUILDDIR)
+
+$(BUILDDIR)Static:
+	-makedir $(BUILDDIR)Static
+
+# - - - - - - - - - Objects for .class
+
+$(BUILDDIR)/classinit.s.o: classinit.s $(BUILDDIR)
+	asm -o$@ $(AFLAGS) classinit.s 
+
+$(BUILDDIR)/class_basename_lib.c.o: class_basename_lib.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_lib.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_dispatch.c.o: class_basename_dispatch.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_dispatch.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_attribs.c.o: class_basename_attribs.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_attribs.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/basename.class: $(CLASSMODELOBJS)
+	slink $(CLASSMODELOBJS) lib lib:sc.lib to $@
+
+# important: the previous version may be still in memory
+# quit any app using the shared gadget, then
+# you have to use command "avail flush" to "expunge" old library/gadget/class.
+	-avail flush
+
+# - - - - - - - - - Objects for model class test case executable
+
+$(BUILDDIR)/basenametest.c.o: basenametest.c $(BUILDDIR) $(HEADERS)
+	sc basenametest.c $(SCOPTS) OBJNAME=$@
+
+$(BUILDDIR)/basenameTest: $(BUILDDIR)/basenametest.c.o
+	slink FROM LIB:c.o $(BUILDDIR)/basenametest.c.o lib $(LIBS) to $@
+
+# - - - - - - - - - Objects for static test case executable
+
+# it compiles all class & test case objects this times with word BASENAME_STATICLINK
+
+$(BUILDDIR)Static/class_basename_lib.c.o: class_basename_lib.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_lib.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_dispatch.c.o: class_basename_dispatch.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_dispatch.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_attribs.c.o: class_basename_attribs.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_attribs.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/basenametest.c.o: basenametest.c $(BUILDDIR)Static $(HEADERS)
+	sc basenametest.c $(SCOPTSS) OBJNAME=$@
+
+$(BUILDDIR)Static/basenameTest_static: $(BUILDDIR)Static $(BUILDDIR)Static/basenametest.c.o $(CLASSMODELOBJSSTATIC)
+	slink FROM LIB:c.o $(BUILDDIR)Static/basenametest.c.o $(CLASSMODELOBJSSTATIC) lib $(LIBS) to $@
+
+# - - - - - - -
+clean:
+	-delete ALL FORCE $(BUILDDIR)
+	-delete ALL FORCE $(BUILDDIR)Static
+	-avail flush

@@ -1,0 +1,110 @@
+# this is the "smakefile" for Amiga SASC6.5 compiler
+# Update your compiler os-include and os-lib directories with recent NDK3.2 include and lib,
+# doing an overriding copy.
+# just get in the directory and use command this file with command "smake"
+# PARMS=REGISTER
+SCOPTS = OPTIMIZE CPU=68000 NOSTKCHK STRMERGE UNSCHAR data=far
+SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1
+LIBS = LIB:sc.lib
+
+SLO    = SC SD ND
+BUILDDIR = build-sasc
+AFLAGS = -dSASASM=1
+
+BINARIES = $(BUILDDIR)/basename.gadget $(BUILDDIR)/basenameTest $(BUILDDIR)Static/basenameTest_static
+
+HEADERS = class_basename.h class_basename_private.h  minialib.h
+
+GADGETOBJS = \
+ $(BUILDDIR)/classinit.s.o \
+ $(BUILDDIR)/class_basename_lib.c.o \
+ $(BUILDDIR)/class_basename_dispatch.c.o \
+ $(BUILDDIR)/class_basename_attribs.c.o \
+ $(BUILDDIR)/class_basename_render.c.o \
+ $(BUILDDIR)/class_basename_handleinput.c.o
+
+GADGETOBJSSTATIC = \
+ $(BUILDDIR)Static/class_basename_lib.c.o \
+ $(BUILDDIR)Static/class_basename_dispatch.c.o \
+ $(BUILDDIR)Static/class_basename_attribs.c.o \
+ $(BUILDDIR)Static/class_basename_render.c.o \
+ $(BUILDDIR)Static/class_basename_handleinput.c.o
+
+all: $(BINARIES)
+
+# - - - - - - - - -
+
+$(BUILDDIR):
+	-makedir $(BUILDDIR)
+
+$(BUILDDIR)Static:
+	-makedir $(BUILDDIR)Static
+
+# - - - - - - - - - Objects for .gadget
+
+$(BUILDDIR)/classinit.s.o: classinit.s $(BUILDDIR)
+	asm -o$@ $(AFLAGS) classinit.s 
+
+$(BUILDDIR)/class_basename_lib.c.o: class_basename_lib.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_lib.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_dispatch.c.o: class_basename_dispatch.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_dispatch.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_attribs.c.o: class_basename_attribs.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_attribs.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_render.c.o: class_basename_render.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_render.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/class_basename_handleinput.c.o: class_basename_handleinput.c $(BUILDDIR) $(HEADERS)
+	sc class_basename_handleinput.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/basename.gadget: $(GADGETOBJS)
+	slink $(GADGETOBJS) lib lib:sc.lib to $@
+# important: the previous version may be still in memory
+# quit any app using the shared gadget, then
+# you have to use command "avail flush" to "expunge" old library/gadget/class.
+	-avail flush
+
+# lib lib:amiga.lib
+# lib $(LIBS)  $(SLO)
+
+# - - - - - - - - - Objects for gadget test case executable
+
+$(BUILDDIR)/basenametest.c.o: basenametest.c $(BUILDDIR) $(HEADERS)
+	sc basenametest.c $(SCOPTS) OBJNAME=$@
+
+$(BUILDDIR)/basenameTest: $(BUILDDIR)/basenametest.c.o
+	slink FROM LIB:c.o $(BUILDDIR)/basenametest.c.o lib $(LIBS) to $@
+
+# - - - - - - - - - Objects for static test case executable
+
+# it compiles all gadget & test case objects this times with word XXX_STATICLINK
+
+$(BUILDDIR)Static/class_basename_lib.c.o: class_basename_lib.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_lib.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_dispatch.c.o: class_basename_dispatch.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_dispatch.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_attribs.c.o: class_basename_attribs.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_attribs.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_render.c.o: class_basename_render.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_render.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/class_basename_handleinput.c.o: class_basename_handleinput.c $(BUILDDIR)Static $(HEADERS)
+	sc class_basename_handleinput.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/basenametest.c.o: basenametest.c $(BUILDDIR)Static $(HEADERS)
+	sc basenametest.c $(SCOPTSS) OBJNAME=$@
+
+$(BUILDDIR)Static/basenameTest_static: $(BUILDDIR)Static $(BUILDDIR)Static/basenametest.c.o $(GADGETOBJSSTATIC)
+	slink FROM LIB:c.o $(BUILDDIR)Static/basenametest.c.o $(GADGETOBJSSTATIC) lib $(LIBS) to $@
+
+# - - - - - - -
+clean:
+	-delete ALL FORCE $(BUILDDIR)
+	-delete ALL FORCE $(BUILDDIR)Static
+	-avail flush

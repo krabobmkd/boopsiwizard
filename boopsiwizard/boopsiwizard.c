@@ -393,7 +393,7 @@ int main(int argc, char **argv)
                         //IA_Font, &helvetica15bu,
                         //LABEL_SoftStyle, FSF_BOLD | FSF_ITALIC,
                         LABEL_Justification, LABEL_CENTRE,
-                        LABEL_Text,(ULONG)"Boopsi Wizard 0.01 early beta",
+                        LABEL_Text,(ULONG)"Boopsi Wizard 0.2 beta",
                     TAG_END);
 
         app->btAbout = NewObject( BUTTON_GetClass(),NULL,
