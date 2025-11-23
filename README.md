@@ -4,6 +4,7 @@
 
 A wizard to create AmigaOS3 C Project for Amiga specific  class, gadget, libs , and more, and targeting many compilers.
 
+![A screenshot of the wizard, and the generated project compiled](boopsiwiz.png)
 
  Beta Version, but fully fonctionnal, so this may already help a lot.
  Templates are defined under directory "templates" with a json and a zip each.
