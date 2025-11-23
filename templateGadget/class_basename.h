@@ -52,6 +52,7 @@
  * all attribs from gadgetclass.h are also valid.
  */
 // different classes may not use same base.
+//DEVTODO: have another offset for your new class to not collide super class ones and optimize...
 #define BASENAME_Dummy			(TAG_USER+0x04110000)
 
 // abstract coordinate from 0 to 65535 , whatever width is.

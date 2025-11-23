@@ -215,6 +215,9 @@ ULONG ASM SAVEDS AppModelDispatch(
 int initAppModel(void)
 {
     // this is how you create a private transient class:
+    // -First param: no name needed for itself.
+    // - "modelclass" is super class name, which is the base for all boopsi class.
+    // a super class name or pointer must always be provided.
     AppModelClass = MakeClass(NULL,"modelclass",NULL,sizeof(struct App),0);
     if(!AppModelClass) return 0;
 

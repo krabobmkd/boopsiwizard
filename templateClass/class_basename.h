@@ -7,6 +7,7 @@
 #include <exec/types.h>
 #include <intuition/classes.h>
 
+// DEVTODO: modelclass is superclass for all base class. If you extend another class, change that name.
 #define VERSION_BASENAME 1
 #define BaseName_SUPERCLASS_ID "modelclass"
 
@@ -52,7 +53,7 @@
  * all its attribs should also be valid.
  */
 // different classes may not use same base.
-//DEVTODO: have another offset...
+//DEVTODO: have another offset for your new class to not collide super class ones and optimize...
 #define BASENAME_Dummy			(TAG_USER+0x04120000)
 
 // some attrib in the class

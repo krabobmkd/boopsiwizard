@@ -85,13 +85,15 @@ const char BaseNameSuperClassID[]=BaseName_SUPERCLASS_ID;
 #endif
 BOOL BaseName_OpenLibs_Dependencies(void)
 {
-    // for sub-libs
+    // DEVTODO: if superclass
+    // if(!SuperClassBase) SuperClassBase = OpenLibrary("superclass.class",44);
+    // return (SuperClassBase != NULL);
     return TRUE;
 }
 
 void BaseName_CloseLibs_Dependencies(void)
 {
-
+    //if(SuperClassBase) CloseLibrary(SuperClassBase);
 }
 //==========================================================================================
 // does not need to be exact, we just want the function pointer:
