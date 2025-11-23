@@ -26,7 +26,7 @@ First: this is not part of official Amiga NDK, but is an opensource effort from 
 
 ## IMPORTANT PRE-REQUESITES
  
-Correct BOOPSI includes are missing in most old compilers installations, which have their os-include dirs back from OS3.0 times. As BOOPSI were updated with recent Amiga OS3.2.x NDK, after installing a compiler you will have to follow the instuctions (basically add or replace some files in include/:
+Correct BOOPSI includes are missing in most old compilers installations, which have their os-include dirs back from OS3.0 times. As BOOPSI were updated with recent Amiga OS3.2.x NDK, after installing a compiler you will have to follow the instructions (basically add or replace some files in include/:
 
 https://developer.amigaos3.net/article/12-ndk-setup-sasc-compiler
 

@@ -56,6 +56,9 @@ INLINE struct Window *boopsi_OpenWindow(Object *owin) {
 
 typedef ULONG (*REHOOKFUNC)();
 
+
+static const char *pVersion="$VER: 0.2";
+
 // DOSBase is already opened by C startup...
 // struct DosLibrary *DOSBase=NULL;
 struct IntuitionBase *IntuitionBase=NULL;
