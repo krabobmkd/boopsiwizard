@@ -18,7 +18,6 @@ set(VERSTRING "1.0")
 
 add_executable(BaseNameTest_static
 		compilers.h
-		boopsiinlines.h
 		basenametest.c
 		class_basename.h
 		class_basename_private.h
@@ -64,7 +63,6 @@ target_compile_definitions(basename.gadget PRIVATE PRIVATE VERSION_STRING="${VER
 # exe that consume the .class
 add_executable(BaseNameTest
 		compilers.h
-		boopsiinlines.h
 		basenametest.c
 		class_basename.h
 		)

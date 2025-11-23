@@ -70,10 +70,9 @@
 #include <images/label.h>
 
 
-
-// because original reaction macros
-// are not modern GCC compatible.
-#include "boopsiinlines.h"
+INLINE struct Window *boopsi_OpenWindow(Object *owin) {
+    return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
+}
 
 typedef ULONG (*REHOOKFUNC)();
 

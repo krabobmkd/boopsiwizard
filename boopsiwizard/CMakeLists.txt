@@ -26,7 +26,6 @@ target_compile_options(cjson PRIVATE ${AMIGACOMPOPTS} )
 # exe that consume the .class
 add_executable(BoopsiWizard
 		compilers.h
-		boopsiinlines.h
 		boopsiwizard.c
 		templates.h
 		templates.c

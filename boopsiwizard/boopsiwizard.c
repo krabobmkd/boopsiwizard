@@ -47,9 +47,11 @@
 
 #include "compilers.h"
 
-
-#include "boopsiinlines.h"
 #include "templates.h"
+
+INLINE struct Window *boopsi_OpenWindow(Object *owin) {
+    return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
+}
 
 
 typedef ULONG (*REHOOKFUNC)();
@@ -1016,11 +1018,11 @@ void openAboutReq()
     " and basename myproject. File names and text contents are replaced.\n"
     " Adress file names case-wise, we allow linux cross-compilation.\n\n"
     "License of wizard itself is LGPL, which means you can fork it or embedd it in\n"
-    " commercial projects.It uses cJson and zlib. Templates should have their own rights\n"
+    " commercial projects. It uses cJson and zlib.\n"
     " Some templates have code parts from official Amiga examples, some not.\n"
     " If your compiler is GCC, from now on you should also install phxass, needed to\n"
     " assemble the C startups."
-    "\n - krb, Nov.2025."
+    "\n\n - krb, Nov.2025."
     ;
     SetAttrs(app->reportReq,REQ_BodyText,(ULONG)p,TAG_END);
 

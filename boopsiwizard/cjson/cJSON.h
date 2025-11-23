@@ -1,4 +1,5 @@
 /*
+  Forked By Krb for Amiga, to have a version with optional float/double
   Copyright (c) 2009-2017 Dave Gamble and cJSON contributors
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
