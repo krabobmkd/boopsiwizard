@@ -33,6 +33,9 @@
 #include <proto/label.h>
 #include <images/label.h>
 
+#include <proto/bitmap.h>
+#include <images/bitmap.h>
+
 #include <proto/string.h>
 #include <gadgets/string.h>
 
@@ -48,6 +51,13 @@
 #include "compilers.h"
 
 #include "templates.h"
+
+#include "datatypebm.h"
+
+
+// trick to have data
+static DtBm dtbmLogo = {0};
+static PLANEPTR dtbmLogo_mask=NULL;
 
 INLINE struct Window *boopsi_OpenWindow(Object *owin) {
     return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
@@ -360,8 +370,8 @@ int main(int argc, char **argv)
     if ( ! (LayoutBase = OpenLibrary("gadgets/layout.gadget",44)))
         cleanexit("Can't open layout.gadget");
 
-//    if ( ! (BitMapBase = OpenLibrary("images/bitmap.image",44)))
-//        cleanexit("Can't open bitmap.image");
+    if ( ! (BitMapBase = OpenLibrary("images/bitmap.image",44)))
+        cleanexit("Can't open bitmap.image");
 
     if ( ! (ButtonBase = OpenLibrary("gadgets/button.gadget",44)))
         cleanexit("Can't open button.gadget");
@@ -396,12 +406,50 @@ int main(int argc, char **argv)
     if(app->drawInfo && app->drawInfo->dri_Font) app->fontHeight =app->drawInfo->dri_Font->tf_YSize + 4;
 
     {
+        extern unsigned char bpwizard_png[];
+        extern unsigned int bpwizard_png_size;
+
+        // BitMap class can load from file datatype, but not from memory. We just do this:
+//        int isok = LoadDataTypeToBm(&bpwizard_png[0],bpwizard_png_size,
+//                        &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+
+        int isok = LoadDataTypeToBm("bpwizard.png",0,
+                        &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+
+        Object* bmlogo = NULL;
+        printf("dtbmLogo.bm:%08lx plane:%08lx\n",(int)dtbmLogo.bm,(int)dtbmLogo_mask);
+        if(dtbmLogo.bm && dtbmLogo_mask)
+        {
+
+            int bmwidth,bmheight;
+            bmwidth = GetBitMapAttr(dtbmLogo.bm,BMA_WIDTH);
+            bmheight = GetBitMapAttr(dtbmLogo.bm,BMA_HEIGHT);
+
+        printf("try:\n");
+            // docs says: If you supply your own bitmap, you MUST set BITMAP_Width and BITMAP_Height too.
+           bmlogo = (Object *)NewObject( BITMAP_GetClass(), NULL,
+                        BITMAP_BitMap,(ULONG)dtbmLogo.bm,
+                        BITMAP_Width,bmwidth,
+                        BITMAP_Height,bmheight,
+                        BITMAP_Masking, TRUE,
+                        BITMAP_MaskPlane,(ULONG)dtbmLogo_mask,
+                    TAG_END);
+        }
+        if(!bmlogo)
+        {   // if image read fail,
+            bmlogo = (Object *)NewObject( LABEL_GetClass(), NULL,LABEL_DrawInfo, app->drawInfo,LABEL_Text,(ULONG)" ? ",TAG_END);
+        }
+
+//        Object* filler =  NewObject( BUTTON_GetClass(),NULL,
+//                                    GA_Text, " ",BUTTON_BevelStyle,BVS_NONE,BUTTON_Transparent, TRUE,TAG_END);
+
+
         Object* label1 = (Object *)NewObject( LABEL_GetClass(), NULL,
                         LABEL_DrawInfo, app->drawInfo,
                         //IA_Font, &helvetica15bu,
                         //LABEL_SoftStyle, FSF_BOLD | FSF_ITALIC,
                         LABEL_Justification, LABEL_CENTRE,
-                        LABEL_Text,(ULONG)"Boopsi Wizard 0.2 beta",
+                        LABEL_Text,(ULONG)" 0.2 beta",
                     TAG_END);
 
         app->btAbout = NewObject( BUTTON_GetClass(),NULL,
@@ -419,10 +467,18 @@ int main(int argc, char **argv)
                     LAYOUT_EvenSize, TRUE,
                     LAYOUT_HorizAlignment, LALIGN_CENTER,
                     LAYOUT_BevelStyle, BVS_GROUP,
+                    LAYOUT_AddImage, bmlogo,
+                    //CHILD_WeightedWidth,0,
+                     CHILD_MaxWidth,dtbmLogo.width+2,
                     LAYOUT_AddImage, label1,
-                     CHILD_WeightedWidth,1,
+                     //CHILD_WeightedWidth,1,
+                    //LAYOUT_AddImage, filler,
+                    // CHILD_WeightedWidth,1,
+                    CHILD_MaxWidth,1280,
                     LAYOUT_AddChild, app->btAbout,
-                     CHILD_WeightedWidth,0,
+                    // CHILD_WeightedWidth,0,
+                     CHILD_MinWidth,32,
+                     CHILD_MaxWidth,32,
                     TAG_DONE);
     }
 
@@ -831,6 +887,9 @@ void exitclose(void)
 //                    if(app->disablecheckbox) DisposeObject(app->disablecheckbox);
 //                }
 //            }
+        }
+        if(dtbmLogo.bm) {
+            closeDataTypeBm(&dtbmLogo);
         }
 
         if(app->drawInfo) FreeScreenDrawInfo(app->lockedscreen, app->drawInfo);

@@ -30,6 +30,11 @@ add_executable(BoopsiWizard
 		templates.h
 		templates.c
 		template_extract.c
+
+		datatypebm.c
+		datatypebm.h
+		bpwizard_png.c
+
 		${ZLIBPATH}/contrib/minizip/unzip.c
 		${ZLIBPATH}/contrib/minizip/unzip.h
 		${ZLIBPATH}/contrib/minizip/ioapi.c
@@ -49,3 +54,5 @@ target_link_libraries(BoopsiWizard PUBLIC z cjson  )
 
 
 install(TARGETS BoopsiWizard DESTINATION "${CMAKE_SOURCE_DIR}/..")
+
+add_executable(convertbin convertbin.c )
