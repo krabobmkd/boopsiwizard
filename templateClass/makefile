@@ -17,7 +17,7 @@ BINARIES = \
  $(BUILDDIR)/basenameTest\
  $(BUILDDIR)Static/basenameTest_static
 
-HEADERS = class_basename.h class_basename_private.h  minialib.h
+HEADERS = class_basename.h class_basename_private.h  minialib.h bdbprintf.h
 
 MODELCLASSOBJS = \
  $(BUILDLIBDIR)/classinit.s.o \
@@ -28,7 +28,9 @@ MODELCLASSOBJS = \
 MODELCLASSOBJSSTATIC = \
  $(BUILDDIR)Static/class_basename_lib.c.o \
  $(BUILDDIR)Static/class_basename_dispatch.c.o \
- $(BUILDDIR)Static/class_basename_attribs.c.o
+ $(BUILDDIR)Static/class_basename_attribs.c.o \
+ $(BUILDDIR)Static/bdbprintf.c.o
+
 
 all: $(BINARIES)
 
@@ -55,7 +57,7 @@ $(BUILDEXEDIR)/%.c.o: %.c $(BUILDEXEDIR) $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BUILDDIR)Static/%.c.o: %.c $(BUILDDIR) $(HEADERS)
-	$(CC) -c -o $@ $< $(CFLAGS) -DBASENAME_STATICLINK=1
+	$(CC) -c -o $@ $< $(CFLAGS) -DBASENAME_STATICLINK=1 -DUSE_DEBUG_BDBPRINT=1
 
 
 $(BUILDLIBDIR)/%.s.o: %.s $(BUILDLIBDIR) $(HEADERS)

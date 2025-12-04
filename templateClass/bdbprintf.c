@@ -4,16 +4,19 @@
  * Provides printf-like functionality that buffers output for later printing.
  * Useful for contexts where immediate output is not possible.
  */
-
+#ifdef USE_DEBUG_BDBPRINT
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <proto/dos.h>
 
 #define BDB_BUFFER_SIZE 4096
 
 /* Static buffer for storing debug output */
 static char bdb_buffer[BDB_BUFFER_SIZE];
-static int bdb_position = 0;
+// volatile means will keep one coherent value if multiple processes use it.
+// (compiler will not map it to a register.)
+static volatile int bdb_position = 0;
 
 /*
  * bdbprintf - Printf to debug buffer
@@ -67,7 +70,8 @@ void flushbdbprint(void)
         bdb_buffer[bdb_position] = '\0';
 
         /* Print the buffer */
-        printf("%s", bdb_buffer);
+        //printf("%s", bdb_buffer);
+		Printf(bdb_buffer); // dos version
         fflush(stdout);
 
         /* Reset buffer position */
@@ -96,3 +100,4 @@ int bdbavailable(void)
 {
     return BDB_BUFFER_SIZE - bdb_position - 1;
 }
+#endif

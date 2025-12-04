@@ -2,7 +2,6 @@
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/graphics.h>
-#include <proto/dos.h>
 #include <proto/layers.h>
 
 #ifdef __SASC
@@ -26,7 +25,16 @@
     #include <images/bevel.h>
 #endif
 
-
+/* Most of the calls to boopsi methods are not done from the App's context,
+ * but from a specific intuition context, and because of that we can't use DOS calls
+ * like dos/Printf() , and also stdlib printf().
+ * So we may print debug informations with a special buffer,and function bdbprintf(),
+ * hen flushbdbprint() in main process will print for real to standard output.
+ * remove word USE_DEBUG_BDBPRINT to desactivate all bdbprintf()/flushbdbprint() calls.
+ * Template projects that links boopsi classes statically use USE_DEBUG_BDBPRINT by default.
+ * Template projects that uses boopsi classes with LoadLibrary() do not.
+ */
+#include "bdbprintf.h"
 
 /* The GM_DOMAIN method is used to obtain the sizing requirements of an
  * object for a class before ever creating an object. */
@@ -151,6 +159,7 @@ ULONG BaseName_Render(Class *C, struct Gadget *Gad, struct gpRender *Render, ULO
 
   gdata=INST_DATA(C, Gad);
 
+  // also sent from GM_GOINACTIVE (4).
   if(Render->MethodID==GM_RENDER)
   {
     rp=Render->gpr_RPort;
@@ -163,8 +172,23 @@ ULONG BaseName_Render(Class *C, struct Gadget *Gad, struct gpRender *Render, ULO
 
   if(rp)
   {
+	int bLayerUpdating=FALSE;
     int penbg=1,penb=2,penc=3;
     struct Region *oldClipRegion;
+
+    bdbprintf(" **** BaseName_Render trace MethodID:%08lx Layer flags:%04lx\n",(int)Render->MethodID,(int)rp->Layer->Flags);
+
+	// note from an OS3 official developer: we got to do manage the following:
+	if( ( rp->Layer->Flags & LAYERUPDATING ) != 0L )
+	{
+		bLayerUpdating = TRUE;
+		EndUpdate(rp->Layer, FALSE);
+		//bdbprintf(" ****Render->MethodID:%08lx LAYERUPDATING\n",(int)Render->MethodID);
+	} else
+	{
+
+	}
+
 
     if(Gad->Flags & GFLG_DISABLED) // if disabled, draw background with another color.
     {
@@ -195,6 +219,12 @@ ULONG BaseName_Render(Class *C, struct Gadget *Gad, struct gpRender *Render, ULO
             SetAPen(rp,penc);
             DrawEllipse(rp,xc,yc,width>>2,height>>2);
         }
+		
+		if(bLayerUpdating) 
+		{
+			BeginUpdate(rp->Layer);
+		}
+		
     #ifdef USE_REGION_CLIPPING
         InstallClipRegion( rp->Layer,oldClipRegion); // important to pass NULL if oldClipRegion is NULL.
     #endif

@@ -6,7 +6,8 @@
 
 #ifndef BDBPRINTF_H
 #define BDBPRINTF_H
-
+#include "compilers.h"
+#ifdef USE_DEBUG_BDBPRINT
 /*
  * bdbprintf - Printf to debug buffer
  *
@@ -41,5 +42,12 @@ void clearbdbprint(void);
  * Returns: number of characters that can still be written to buffer
  */
 int bdbavailable(void);
+
+#else
+INLINE int bdbprintf(const char *format, ...) { return 0; }
+INLINE void flushbdbprint(void) {}
+INLINE void clearbdbprint(void) {}
+INLINE int bdbavailable(void)  { return 0; }
+#endif
 
 #endif /* BDBPRINTF_H */

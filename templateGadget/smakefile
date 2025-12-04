@@ -4,7 +4,7 @@
 # just get in the directory and use command this file with command "smake"
 # PARMS=REGISTER
 SCOPTS = OPTIMIZE CPU=68000 NOSTKCHK STRMERGE UNSCHAR data=far
-SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1
+SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1 DEFINE=USE_DEBUG_BDBPRINT=1
 LIBS = LIB:sc.lib
 
 SLO    = SC SD ND
@@ -13,7 +13,7 @@ AFLAGS = -dSASASM=1
 
 BINARIES = $(BUILDDIR)/basename.gadget $(BUILDDIR)/basenameTest $(BUILDDIR)Static/basenameTest_static
 
-HEADERS = class_basename.h class_basename_private.h  minialib.h
+HEADERS = class_basename.h class_basename_private.h  minialib.h bdbprintf.h
 
 GADGETOBJS = \
  $(BUILDDIR)/classinit.s.o \
@@ -21,14 +21,16 @@ GADGETOBJS = \
  $(BUILDDIR)/class_basename_dispatch.c.o \
  $(BUILDDIR)/class_basename_attribs.c.o \
  $(BUILDDIR)/class_basename_render.c.o \
- $(BUILDDIR)/class_basename_handleinput.c.o
-
+ $(BUILDDIR)/class_basename_handleinput.c.o \
+ $(BUILDDIR)/bdbprintf.c.o
+ 
 GADGETOBJSSTATIC = \
  $(BUILDDIR)Static/class_basename_lib.c.o \
  $(BUILDDIR)Static/class_basename_dispatch.c.o \
  $(BUILDDIR)Static/class_basename_attribs.c.o \
  $(BUILDDIR)Static/class_basename_render.c.o \
- $(BUILDDIR)Static/class_basename_handleinput.c.o
+ $(BUILDDIR)Static/class_basename_handleinput.c.o \
+ $(BUILDDIR)Static/bdbprintf.c.o
 
 all: $(BINARIES)
 
@@ -59,6 +61,9 @@ $(BUILDDIR)/class_basename_render.c.o: class_basename_render.c $(BUILDDIR) $(HEA
 
 $(BUILDDIR)/class_basename_handleinput.c.o: class_basename_handleinput.c $(BUILDDIR) $(HEADERS)
 	sc class_basename_handleinput.c $(SCOPTS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)/bdbprintf.c.o: bdbprintf.c $(BUILDDIR) $(HEADERS)
+	sc bdbprintf.c $(SCOPTS) NOSTARTUP OBJNAME=$@
 
 $(BUILDDIR)/basename.gadget: $(GADGETOBJS)
 	slink $(GADGETOBJS) lib lib:sc.lib to $@
@@ -96,6 +101,9 @@ $(BUILDDIR)Static/class_basename_render.c.o: class_basename_render.c $(BUILDDIR)
 
 $(BUILDDIR)Static/class_basename_handleinput.c.o: class_basename_handleinput.c $(BUILDDIR)Static $(HEADERS)
 	sc class_basename_handleinput.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
+
+$(BUILDDIR)Static/bdbprintf.c.o: bdbprintf.c $(BUILDDIR)Static $(HEADERS)
+	sc bdbprintf.c $(SCOPTSS) NOSTARTUP OBJNAME=$@
 
 $(BUILDDIR)Static/basenametest.c.o: basenametest.c $(BUILDDIR)Static $(HEADERS)
 	sc basenametest.c $(SCOPTSS) OBJNAME=$@

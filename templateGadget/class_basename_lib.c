@@ -21,6 +21,18 @@
     #include <proto/bevel.h>
 #endif
 
+/* Most of the calls to boopsi methods are not done from the App's context,
+ * but from a specific intuition context, and because of that we can't use DOS calls
+ * like dos/Printf() , and also stdlib printf().
+ * So we may print debug informations with a special buffer,and function bdbprintf(),
+ * hen flushbdbprint() in main process will print for real to standard output.
+ * remove word USE_DEBUG_BDBPRINT to desactivate all bdbprintf()/flushbdbprint() calls.
+ * Template projects that links boopsi classes statically use USE_DEBUG_BDBPRINT by default.
+ * Template projects that uses boopsi classes with LoadLibrary() do not.
+ */
+#include "bdbprintf.h"
+
+
 typedef ULONG (*REHOOKFUNC)();
 
 #ifdef BASENAME_STATICLINK
