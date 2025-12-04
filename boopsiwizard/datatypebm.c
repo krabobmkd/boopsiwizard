@@ -27,18 +27,25 @@ int LoadDataTypeToBm(const char *pFileNameOrMem, int ifRamRamSize,
     if(ifRamRamSize>0)
     {   // ram mode
 
-        DtBm->obj =  NewDTObject( (APTR)pFileNameOrMem,
-                    DTA_SourceType,         DTST_MEMORY,
-                   // DTA_SourceAddress,(ULONG)pFileNameOrMem,
-                   // DTA_SourceSize,(ULONG)ifRamRamSize,
-                    DTA_GroupID,            GID_PICTURE,
-                    PDTA_DestMode, PMODE_V43,
-                    OBP_Precision,          PRECISION_IMAGE,
-                    PDTA_FreeSourceBitMap,  TRUE,
-                    PDTA_Screen,            pDestScreen,
-                    PDTA_Remap,             TRUE,
-                   0
-             );
+        DtBm->obj = NewDTObject(NULL,
+    DTA_SourceType, DTST_MEMORY,
+    DTA_SourceAddress, (APTR)pFileNameOrMem,
+    DTA_SourceSize, ifRamRamSize,
+    DTA_GroupID, GID_PICTURE,
+    TAG_END);
+
+//         NewDTObject( (APTR)pFileNameOrMem,
+//                    DTA_SourceType,         DTST_MEMORY,
+//                   // DTA_SourceAddress,(ULONG)pFileNameOrMem,
+//                   // DTA_SourceSize,(ULONG)ifRamRamSize,
+//                    DTA_GroupID,            GID_PICTURE,
+//                    PDTA_DestMode, PMODE_V43,
+//                    OBP_Precision,          PRECISION_IMAGE,
+//                    PDTA_FreeSourceBitMap,  TRUE,
+//                    PDTA_Screen,            pDestScreen,
+//                    PDTA_Remap,             TRUE,
+//                   0
+//             );
     } else
     {   // file mode
         DtBm->obj =  NewDTObject( pFileNameOrMem,
