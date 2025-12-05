@@ -1,0 +1,97 @@
+# this is the makefile for vbcc
+# get vbcc from http://sun.hasenbraten.de/vbcc/   ... vbcc_bin_amigaos68k.lha
+# Update your compiler os-include and os-lib directories with recent NDK3.2 
+# instructions at: https://developer.amigaos3.net/article/11-ndk-setup-vbcc-compiler
+# also download some "make" command from aminet, or the one from ADE on aminet.
+#
+# compile with >make -f vmakefile
+
+CC = vc
+AS = vasmm68k_mot
+BUILDDIR = build-vbcc
+BUILDLIBDIR = build-vbcc/libobjs
+BUILDEXEDIR = build-vbcc/exeobjs
+
+# set -I to your NDK3.2 Include_I
+ASMFLAGS = -phxass -Fhunk -I Work:Code/NDK32/Include_I 
+# options with vbccm68k syntax 
+CFLAGS = +aos68k -cpu=68020
+
+BINARIES = \
+ $(BUILDDIR)/basename.gadget\
+ $(BUILDDIR)/basenameTest\
+ $(BUILDDIR)Static/basenameTest_static
+
+HEADERS = class_basename.h class_basename_private.h  minialib.h
+
+GADGETOBJS = \
+ $(BUILDLIBDIR)/classinit.s.o \
+ $(BUILDLIBDIR)/class_basename_lib.c.o \
+ $(BUILDLIBDIR)/class_basename_dispatch.c.o \
+ $(BUILDLIBDIR)/class_basename_attribs.c.o \
+ $(BUILDLIBDIR)/class_basename_render.c.o \
+ $(BUILDLIBDIR)/class_basename_handleinput.c.o \
+ $(BUILDLIBDIR)/bdbprintf.c.o
+
+GADGETOBJSSTATIC = \
+ $(BUILDDIR)Static/class_basename_lib.c.o \
+ $(BUILDDIR)Static/class_basename_dispatch.c.o \
+ $(BUILDDIR)Static/class_basename_attribs.c.o \
+ $(BUILDDIR)Static/class_basename_render.c.o \
+ $(BUILDDIR)Static/class_basename_handleinput.c.o \
+ $(BUILDDIR)Static/bdbprintf.c.o
+
+all: $(BINARIES)
+
+# - - - - - - - - -
+
+$(BUILDDIR):
+	-makedir $(BUILDDIR)
+
+$(BUILDLIBDIR): $(BUILDDIR)
+	-makedir $(BUILDLIBDIR)
+
+$(BUILDEXEDIR): $(BUILDDIR)
+	-makedir $(BUILDEXEDIR)
+
+$(BUILDDIR)Static:
+	-makedir $(BUILDDIR)Static
+
+# - - - - - - - - 
+
+$(BUILDLIBDIR)/%.c.o: %.c $(BUILDLIBDIR) $(HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS) -nostdlib
+
+$(BUILDEXEDIR)/%.c.o: %.c $(BUILDEXEDIR) $(HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS)
+
+$(BUILDDIR)Static/%.c.o: %.c $(BUILDDIR) $(HEADERS)
+	$(CC) -c -o $@ $< $(CFLAGS) -DBASENAME_STATICLINK=1 -DUSE_DEBUG_BDBPRINT=1 
+
+
+$(BUILDLIBDIR)/%.s.o: %.s $(BUILDLIBDIR) $(HEADERS)
+	$(AS) $< -o $@ $(ASMFLAGS)
+# - - - - - - - - - for .gadget
+
+$(BUILDDIR)/basename.gadget: $(GADGETOBJS)
+
+	vlink -bamigahunk -x -Bstatic -C$(CC) -nostdlib -Z -mrel $(GADGETOBJS) -o $@   
+	# mrel for section merging
+#	$(CC) -o $@ $(GADGETOBJS) $(CFLAGS) -ld=vlink -x -Bstatic -C$(CC) -nostdlib -Lvlibos3: vlibos3:startup.o %s %s -lvc -o %s
+#	-ffreestanding -nostartfiles  -Wl,-e,__start
+
+# - - - - - - - - - executable to test gadget
+# $(BUILDEXEDIR)/basenametest.c.o
+$(BUILDDIR)/basenameTest: basenametest.c
+	vc $(CFLAGS) basenametest.c -o $@ -lamiga
+
+# - - - - - - - - -  static test case executable
+
+$(BUILDDIR)Static/basenameTest_static: $(BUILDDIR)Static $(BUILDDIR)Static/basenametest.c.o $(GADGETOBJSSTATIC)
+	$(CC) -o $@ $(CFLAGS) $(BUILDDIR)Static/basenametest.c.o $(GADGETOBJSSTATIC)
+
+
+# - - - - - - -
+clean:
+	-delete ALL FORCE $(BUILDDIR)
+	-delete ALL FORCE $(BUILDDIR)Static

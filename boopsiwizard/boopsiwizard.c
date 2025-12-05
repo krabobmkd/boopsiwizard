@@ -606,6 +606,15 @@ int main(int argc, char **argv)
                      ICA_TARGET, (ULONG)AppInstance,     // app model will receive notifications.
                     TAG_END);
 
+
+                    Object* cbvbcc =  (Object *)NewObject( CHECKBOX_GetClass(), NULL,
+                        GA_DrawInfo,(ULONG) app->drawInfo,
+                        GA_Text,(ULONG)"VBCC vmakefile (1999,C98)",
+                        CHECKBOX_Checked,TRUE,
+                     GA_ID,GAD_CB_MAKEFILE,
+                     ICA_TARGET, (ULONG)AppInstance,     // app model will receive notifications.
+                    TAG_END);
+
                     Object* cbcmake =  (Object *)NewObject( CHECKBOX_GetClass(), NULL,
                         GA_DrawInfo,(ULONG) app->drawInfo,
                         GA_Text,(ULONG)"GCC6.5 CMakeList.txt (2011,C11)",
@@ -621,6 +630,7 @@ int main(int argc, char **argv)
                     LAYOUT_HorizAlignment, LALIGN_RIGHT,
                    LAYOUT_AddChild, cbsasc,
                    LAYOUT_AddChild, cbgcc,
+                   LAYOUT_AddChild, cbvbcc,
                    LAYOUT_AddChild, cbcmake,
                     TAG_DONE);
 
@@ -1039,6 +1049,7 @@ void generate()
                         "Everything was named accordingly.\n"
                         "You may open a shell there and type:\n"
                         " smake for sas-c, or make for gcc.\n"
+                        " or make -f vmakefile for vbcc.\n"
                         "There is also a CMakeLists.txt for cross-compilation.\n"
                         "binaries will then be generated in build-xxx dirs.",report.destinationDir);
             SetAttrs(app->reportReq,REQ_BodyText,(ULONG)&temp[0],TAG_END);
