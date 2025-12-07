@@ -14,7 +14,7 @@ typedef struct {
 } DtBm;
 
 /** this version works for 24bit target or 8bit target with remap, may return transparent bnitmap */
-int LoadDataTypeToBm(const char *pFileNameOrMem, int ifRamRamSize,
+int LoadDataTypeToBm(const char *pFileName, const char *pBin, int binsize,
                         DtBm *DtBm,PLANEPTR *pmaskPlane, struct Screen *pDestScreen);
 void closeDataTypeBm(DtBm *DtBm);
 #endif

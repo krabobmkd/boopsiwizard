@@ -31,9 +31,11 @@ add_executable(BoopsiWizard
 		templates.c
 		template_extract.c
 
-		datatypebm.c
-		datatypebm.h
-		bpwizard_png.c
+		#datatypebm.c
+		#datatypebm.h
+		#bpwizard_png.c
+		#bpwizard_gif.c
+		#bpwizard_ilbm.c
 
 		${ZLIBPATH}/contrib/minizip/unzip.c
 		${ZLIBPATH}/contrib/minizip/unzip.h

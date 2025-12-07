@@ -1,4 +1,4 @@
-//#include <proto/exec.h>
+#include <proto/exec.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 #include <proto/dos.h>
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 #include "datatypebm.h"
-int LoadDataTypeToBm(const char *pFileNameOrMem, int ifRamRamSize,
+int LoadDataTypeToBm(const char *pFileName,const char *pBin, int binsize,
                          DtBm *DtBm,PLANEPTR *pmaskPlane,struct Screen *pDestScreen)
 {
     UBYTE                   *chunk;
@@ -22,28 +22,57 @@ int LoadDataTypeToBm(const char *pFileNameOrMem, int ifRamRamSize,
     struct BitMapHeader     *bmhd=NULL;
     struct ColorRegister    *coloreg=NULL;
 
- printf("ifRamRamSize:%d\n",ifRamRamSize);
+// char *pmempublic = NULL;
 
-    if(ifRamRamSize>0)
+ printf("binsize:%d\n",binsize);
+
+    if(binsize>0 && pBin)
     {   // ram mode
+        // pmempublic = AllocVec(binsize,MEMF_PUBLIC);
+        // memcpy(pmempublic,pBin,binsize);
+ /*
+                     // PDTA_DestMode, PMODE_V43,
+                    // OBP_Precision,          PRECISION_IMAGE,
+                    // PDTA_FreeSourceBitMap,  TRUE,
+                    // PDTA_Screen,            pDestScreen,
+                    // PDTA_Remap,             TRUE,
+ */
+ printf("bin case\n");
+        DtBm->obj =
+        NewDTObject( NULL,// pFileName,
+                 //   PDTA_DestMode, PMODE_V43,
+                   //   PDTA_WhichPicture,0,
+                   //   DTA_BaseName, "png",
+                    DTA_SourceType, DTST_MEMORY, //     DTST_RAM   DTST_MEMORY,
+                    DTA_SourceAddress,(ULONG)pBin,
+                    DTA_SourceSize,(ULONG)binsize,
 
-        DtBm->obj =  NewDTObject( (APTR)pFileNameOrMem,
-                    DTA_SourceType,         DTST_MEMORY,
-                   // DTA_SourceAddress,(ULONG)pFileNameOrMem,
-                   // DTA_SourceSize,(ULONG)ifRamRamSize,
                     DTA_GroupID,            GID_PICTURE,
-                    PDTA_DestMode, PMODE_V43,
                     OBP_Precision,          PRECISION_IMAGE,
                     PDTA_FreeSourceBitMap,  TRUE,
                     PDTA_Screen,            pDestScreen,
                     PDTA_Remap,             TRUE,
                    0
              );
+        // NewDTObject( (APTR)pFileName,
+        //             DTA_SourceType,         DTST_MEMORY,
+        //            // DTA_SourceAddress,(ULONG)pFileNameOrMem,
+        //            // DTA_SourceSize,(ULONG)ifRamRamSize,
+        //             DTA_GroupID,            GID_PICTURE,
+        //             PDTA_DestMode, PMODE_V43,
+        //             OBP_Precision,          PRECISION_IMAGE,
+        //             PDTA_FreeSourceBitMap,  TRUE,
+        //             PDTA_Screen,            pDestScreen,
+        //             PDTA_Remap,             TRUE,
+        //            0
+        //      );
     } else
     {   // file mode
-        DtBm->obj =  NewDTObject( pFileNameOrMem,
+        DtBm->obj =  NewDTObject( pFileName,
+                    PDTA_DestMode, PMODE_V43,
                     DTA_SourceType,         DTST_FILE,
                     DTA_GroupID,            GID_PICTURE,
+
                     OBP_Precision,          PRECISION_IMAGE,
                     PDTA_FreeSourceBitMap,  TRUE,
                     PDTA_Screen,            pDestScreen,
@@ -107,6 +136,7 @@ int LoadDataTypeToBm(const char *pFileNameOrMem, int ifRamRamSize,
 //    if (bm == NULL) {   GetAttr(   PDTA_BitMap,   obj,    (ULONG *) &bm ); }
     if (DtBm->bm == NULL) { DisposeDTObject( DtBm->obj ); DtBm->obj = NULL;  return(4);   }
 
+    //if(pmempublic) FreeVec(pmempublic);
     // get number of color in the palette
     //nbc = 1<<(bmhd->bmh_Depth);
 

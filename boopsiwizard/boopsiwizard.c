@@ -14,6 +14,7 @@
 #include <proto/graphics.h>
 #include <proto/intuition.h>
 #include <proto/utility.h>
+#include <proto/datatypes.h>
 #include <proto/dos.h>
 #include <proto/icon.h>
 #include <exec/alerts.h>
@@ -56,8 +57,8 @@
 
 
 // trick to have data
-static DtBm dtbmLogo = {0};
-static PLANEPTR dtbmLogo_mask=NULL;
+// static DtBm dtbmLogo = {0};
+// static PLANEPTR dtbmLogo_mask=NULL;
 
 INLINE struct Window *boopsi_OpenWindow(Object *owin) {
     return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
@@ -78,6 +79,7 @@ struct Library *LayersBase=NULL; // only used by gadgets drawing in static link 
 // used for appicon.
 struct Library *IconBase=NULL;
 struct Library *AslBase=NULL;
+struct Library *DataTypesBase=NULL;
 
 // boopsi classes bases:
 struct Library *WindowBase=NULL;
@@ -360,6 +362,10 @@ int main(int argc, char **argv)
 
     if ( ! (AslBase = OpenLibrary("asl.library",39)))
         cleanexit("Can't open asl.library");
+
+    if ( ! (DataTypesBase = OpenLibrary("datatypes.library",44)))
+        cleanexit("Can't open datatypes.library v44");
+
     // note: DOSBase is opened by C startup.
 
     // - - - - open boopsi classes...
@@ -409,32 +415,43 @@ int main(int argc, char **argv)
         extern unsigned char bpwizard_png[];
         extern unsigned int bpwizard_png_size;
 
-        // BitMap class can load from file datatype, but not from memory. We just do this:
-//        int isok = LoadDataTypeToBm(&bpwizard_png[0],bpwizard_png_size,
-//                        &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+        extern unsigned char bpwizard_gif[];
+        extern unsigned int bpwizard_gif_size;
 
-        int isok = LoadDataTypeToBm("bpwizard.png",0,
-                        &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+        extern unsigned char bpwizard_ilbm[];
+        extern unsigned int bpwizard_ilbm_size;
+
+        // BitMap class can load from file datatype, but not from memory. We just do this:
+       // int isok = LoadDataTypeToBm(NULL,&bpwizard_gif[0],bpwizard_gif_size,
+       //                 &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+       // int isok = LoadDataTypeToBm("a.ilbm",&bpwizard_ilbm[0],bpwizard_ilbm_size,
+       //                 &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+
+        // int isok = LoadDataTypeToBm("bpwizard.png",NULL,0,
+        //                 &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
+
+        // int isok = LoadDataTypeToBm("bpwizard.gif",NULL,0,
+        //                 &dtbmLogo,&dtbmLogo_mask, app->lockedscreen);
 
         Object* bmlogo = NULL;
-        printf("dtbmLogo.bm:%08lx plane:%08lx\n",(int)dtbmLogo.bm,(int)dtbmLogo_mask);
-        if(dtbmLogo.bm && dtbmLogo_mask)
-        {
+        // printf("dtbmLogo.bm:%08lx plane:%08lx\n",(int)dtbmLogo.bm,(int)dtbmLogo_mask);
+        // if(dtbmLogo.bm && dtbmLogo_mask)
+        // {
 
-            int bmwidth,bmheight;
-            bmwidth = GetBitMapAttr(dtbmLogo.bm,BMA_WIDTH);
-            bmheight = GetBitMapAttr(dtbmLogo.bm,BMA_HEIGHT);
+        //     int bmwidth,bmheight;
+        //     bmwidth = GetBitMapAttr(dtbmLogo.bm,BMA_WIDTH);
+        //     bmheight = GetBitMapAttr(dtbmLogo.bm,BMA_HEIGHT);
 
-        printf("try:\n");
-            // docs says: If you supply your own bitmap, you MUST set BITMAP_Width and BITMAP_Height too.
-           bmlogo = (Object *)NewObject( BITMAP_GetClass(), NULL,
-                        BITMAP_BitMap,(ULONG)dtbmLogo.bm,
-                        BITMAP_Width,bmwidth,
-                        BITMAP_Height,bmheight,
-                        BITMAP_Masking, TRUE,
-                        BITMAP_MaskPlane,(ULONG)dtbmLogo_mask,
-                    TAG_END);
-        }
+        // printf("try:\n");
+        //     // docs says: If you supply your own bitmap, you MUST set BITMAP_Width and BITMAP_Height too.
+        //    bmlogo = (Object *)NewObject( BITMAP_GetClass(), NULL,
+        //                 BITMAP_BitMap,(ULONG)dtbmLogo.bm,
+        //                 BITMAP_Width,bmwidth,
+        //                 BITMAP_Height,bmheight,
+        //                 BITMAP_Masking, TRUE,
+        //                 BITMAP_MaskPlane,(ULONG)dtbmLogo_mask,
+        //             TAG_END);
+        // }
         if(!bmlogo)
         {   // if image read fail,
             bmlogo = (Object *)NewObject( LABEL_GetClass(), NULL,LABEL_DrawInfo, app->drawInfo,LABEL_Text,(ULONG)" ? ",TAG_END);
@@ -467,9 +484,8 @@ int main(int argc, char **argv)
                     LAYOUT_EvenSize, TRUE,
                     LAYOUT_HorizAlignment, LALIGN_CENTER,
                     LAYOUT_BevelStyle, BVS_GROUP,
-                    LAYOUT_AddImage, bmlogo,
-                    //CHILD_WeightedWidth,0,
-                     CHILD_MaxWidth,dtbmLogo.width+2,
+                   // LAYOUT_AddImage, bmlogo,
+                    // CHILD_MaxWidth,dtbmLogo.width+2,
                     LAYOUT_AddImage, label1,
                      //CHILD_WeightedWidth,1,
                     //LAYOUT_AddImage, filler,
@@ -888,9 +904,9 @@ void exitclose(void)
 //                }
 //            }
         }
-        if(dtbmLogo.bm) {
-            closeDataTypeBm(&dtbmLogo);
-        }
+        // if(dtbmLogo.bm) {
+        //     closeDataTypeBm(&dtbmLogo);
+        // }
 
         if(app->drawInfo) FreeScreenDrawInfo(app->lockedscreen, app->drawInfo);
         if(app->lockedscreen) UnlockPubScreen(0, app->lockedscreen);
@@ -908,7 +924,7 @@ void exitclose(void)
     if(LayoutBase) CloseLibrary(LayoutBase);
     if(WindowBase) CloseLibrary(WindowBase);
 
-
+    if(DataTypesBase) CloseLibrary(DataTypesBase);
     if(GfxBase) CloseLibrary((struct Library*)GfxBase);
     if(IntuitionBase) CloseLibrary((struct Library*)IntuitionBase);
     if(LayersBase) CloseLibrary(LayersBase);
