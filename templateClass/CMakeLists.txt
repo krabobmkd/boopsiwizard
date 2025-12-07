@@ -24,10 +24,12 @@ add_executable(BaseNameTest_static
 		class_basename_lib.c
 		class_basename_dispatch.c
 		class_basename_attribs.c
+		bdbprintf.c
+		bdbprintf.h
 		)
 
 target_compile_options(BaseNameTest_static PRIVATE -s -save-temps -Os -m68000)
-target_compile_definitions(BaseNameTest_static PRIVATE BASENAME_STATICLINK=1 )
+target_compile_definitions(BaseNameTest_static PRIVATE BASENAME_STATICLINK=1 USE_DEBUG_BDBPRINT=1 )
 target_link_options(BaseNameTest_static PRIVATE -s )
 install(TARGETS BaseNameTest_static DESTINATION "${CMAKE_SOURCE_DIR}/..")
 
@@ -41,6 +43,8 @@ add_executable(basename.class
 		class_basename_lib.c
 		class_basename_dispatch.c
 		class_basename_attribs.c
+		bdbprintf.c
+		bdbprintf.h
 		)
 
 
@@ -60,7 +64,7 @@ target_compile_definitions(basename.class PRIVATE PRIVATE VERSION_STRING="${VERS
 add_executable(BaseNameTest
 		compilers.h
 		basenametest.c
-		class_basename.h
+		class_basename.h		
 		)
 
 target_compile_options(BaseNameTest PRIVATE -Os -save-temps -m68000 )

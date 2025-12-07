@@ -4,7 +4,7 @@
 # just get in the directory and use command this file with command "smake"
 # PARMS=REGISTER
 SCOPTS = OPTIMIZE CPU=68000 NOSTKCHK STRMERGE UNSCHAR data=far
-SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1
+SCOPTSS = $(SCOPTS) DEFINE=BASENAME_STATICLINK=1 DEFINE=USE_DEBUG_BDBPRINT=1
 LIBS = LIB:sc.lib
 
 SLO    = SC SD ND
@@ -24,7 +24,8 @@ CLASSMODELOBJS = \
 CLASSMODELOBJSSTATIC = \
  $(BUILDDIR)Static/class_basename_lib.c.o \
  $(BUILDDIR)Static/class_basename_dispatch.c.o \
- $(BUILDDIR)Static/class_basename_attribs.c.o
+ $(BUILDDIR)Static/class_basename_attribs.c.o \
+ $(BUILDDIR)Static/bdbprintf.c.o
 
 all: $(BINARIES)
 

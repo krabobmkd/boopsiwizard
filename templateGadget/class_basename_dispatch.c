@@ -1,13 +1,9 @@
 
-    #include <proto/exec.h>
-    #include <proto/intuition.h>
-    #include <proto/graphics.h>
-    #include <proto/utility.h>
+
 #ifdef __SASC
     #include <clib/alib_protos.h>
-//    #include "minialib.h"
 #else
-    // GCC
+    // GCC, vbcc
     #include "minialib.h"
 #endif
 #include <proto/dos.h>
@@ -23,6 +19,23 @@
     #include <proto/bevel.h>
     #include <images/bevel.h>
 #endif
+
+#include <proto/exec.h>
+#include <proto/intuition.h>
+#include <proto/graphics.h>
+#include <proto/utility.h>
+
+/* Most of the calls to boopsi methods are not done from the App's context,
+ * but from a specific intuition context, and because of that we can't use DOS calls
+ * like dos/Printf() , and also stdlib printf().
+ * So we may print debug informations with a special buffer,and function bdbprintf(),
+ * hen flushbdbprint() in main process will print for real to standard output.
+ * remove word USE_DEBUG_BDBPRINT to desactivate all bdbprintf()/flushbdbprint() calls.
+ * Template projects that links boopsi classes statically use USE_DEBUG_BDBPRINT by default.
+ * Template projects that uses boopsi classes with LoadLibrary() do not.
+ */
+#include "bdbprintf.h"
+
 
 /** WATCH OUT ! boopsi docs says:
 *  "the rkmmodelclass dispatcher must be able to run on Intuition's context,
@@ -61,10 +74,18 @@ ULONG ASM SAVEDS BaseName_Dispatcher(
     gdata->_clipRegion = NewRegion();
 #endif
 #ifdef USE_BEVEL_FRAME
+#ifdef __VBCC__
+          gdata->Bevel= vbNewObject(BEVEL_GetClass(),NULL,
+            BEVEL_Style, BVS_BUTTON,
+            BEVEL_FillPen, -1,
+            TAG_END);
+#else
           gdata->Bevel= NewObject(BEVEL_GetClass(),NULL,
             BEVEL_Style, BVS_BUTTON,
             BEVEL_FillPen, -1,
             TAG_END);
+#endif
+
 #endif
 
  //   Printf("instance:%lx\n",(int)gdata);

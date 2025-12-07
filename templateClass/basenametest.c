@@ -71,6 +71,18 @@
 #include <proto/label.h>
 #include <images/label.h>
 
+/* Most of the calls to boopsi methods are not done from the App's context,
+ * but from a specific intuition context, and because of that we can't use DOS calls
+ * like dos/Printf() , and also stdlib printf().
+ * So we may print debug informations with a special buffer,and function bdbprintf(),
+ * hen flushbdbprint() in main process will print for real to standard output.
+ * remove word USE_DEBUG_BDBPRINT to desactivate all bdbprintf()/flushbdbprint() calls.
+ * Template projects that links boopsi classes statically use USE_DEBUG_BDBPRINT by default.
+ * Template projects that uses boopsi classes with LoadLibrary() do not.
+ */
+#include "bdbprintf.h"
+
+
 INLINE struct Window *boopsi_OpenWindow(Object *owin) {
     return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
 }
@@ -474,6 +486,8 @@ int main(int argc, char **argv)
 
             Wait(signal | (1L << app->app_port->mp_SigBit));
 
+            flushbdbprint();
+
             /* CA_HandleInput() returns the gadget ID of a clicked
              * gadget, or one of several pre-defined values.  For
              * this demo, we're only actually interested in a
@@ -531,6 +545,7 @@ int main(int argc, char **argv)
         } // end while app loop
     } // loop paragraph end
 
+    flushbdbprint();
     // all close done in exitclose().
     return 0;
 }

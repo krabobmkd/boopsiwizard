@@ -69,6 +69,7 @@
 #include <proto/label.h>
 #include <images/label.h>
 
+#include "bdbprintf.h"
 
 INLINE struct Window *boopsi_OpenWindow(Object *owin) {
     return  (struct Window *)DoMethod(owin, WM_OPEN, NULL);
@@ -443,6 +444,8 @@ int main(int argc, char **argv)
 
             Wait(signal | (1L << app->app_port->mp_SigBit));
 
+            flushbdbprint();
+
             /* CA_HandleInput() returns the gadget ID of a clicked
              * gadget, or one of several pre-defined values.  For
              * this demo, we're only actually interested in a
@@ -498,6 +501,8 @@ int main(int argc, char **argv)
             } // end while messages
         } // end while app loop
     } // loop paragraph end
+
+    flushbdbprint();
 
     // all close done in exitclose().
     return 0;

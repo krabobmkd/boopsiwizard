@@ -24,10 +24,6 @@ _LVOAlert           EQU	-108
 _LVOAllocMem	EQU	-198
 _LVOFreeMem     EQU	-210
 
-        ; these are the modern Amiga NDK path, that makes cofee:
-        ;    INCLUDE "lvo/exec_lib.i"
-        ;    INCLUDE "lvo/dos_lib.i"
-
 	INCLUDE "intuition/classes.i"
 
  ; from modern intuition/classes.i, also missing in SASC6.5 includes
@@ -134,35 +130,7 @@ LibInit:
     move.w	#REVISION,LIB_REVISION(a5)
     ;test
     clr.w	LIB_OPENCNT(a5)
-;        move.l #AN_BadGadget,d7
-;        CALL Alert
 
-; OpenLibrary are done on the C side with createclass, because
-; C proto system will use named XXXBase anyway.
-;        move.l  #AO_GraphicsLib,d7
-;        lea     GfxName(pc),a1
-;        bsr.s	OpenLib
-;        move.l  d0,cb_GfxBase(a5)
-
-;        move.l  #1,d7
- ;       lea     DosName(pc),a1
-  ;      bsr.s	OpenLib
-   ;     move.l  d0,cb_DOSBase(a5)
-
-;        lea     Pouet(pc),a0
-;        move.l  d0,a6
-;        CALL Printf
-
-
-;        move.l  #AO_Intuition,d7
-;        lea     IntuitionName(pc),a1
-;        bsr.s	OpenLib
-;        move.l  d0,cb_IntuitionBase(a5)
-
-;        move.l  #AO_UtilityLib,d7
-;        lea     UtilityName(pc),a1
-;        bsr.s	OpenLib
-;        move.l  d0,cb_UtilityBase(a5)
 
         move.l  a5,d0
         movem.l (sp)+,a0/a5/d7
@@ -170,29 +138,14 @@ LibInit:
 
 LIBVERSION    EQU  39
 
-OpenLib:
-        moveq   #LIBVERSION,d0
-        CALL    OpenLibrary
-        move.l	(sp)+,a0	; pop return address
-        tst.l   d0		; did lib open?
-        beq.s   FailInit	; nope, so exit
-        jmp	(a0)		; yes, so return
 
 FailInit:
-        bsr     CloseLibs
+        ;bsr     CloseLibs
         or.l    #AG_OpenLib,d7
         CALL	Alert
         movem.l (sp)+,a0/a5/d7
         moveq   #0,d0
         rts
-
-;GfxName       DC.B "graphics.library",0
-;IntuitionName DC.B "intuition.library",0
-;UtilityName   DC.B "utility.library",0
-;DosName  DC.B "dos.library",0
-
-;Pouet dc.b "pouet pouet\n",0
-        CNOP    0,2
 
 ;-----------------------------------------------------------------------
 
@@ -276,17 +229,10 @@ DoExpunge:
         move.l  cb_SegList(a5),d2
 
         move.l  a5,a1
-        REMOVE
-;Remove node from whatever list it is in
-;REMOVE	    MACRO   ; A0-(destroyed)  A1-node(destroyed)
-;	    MOVE.L  (A1)+,A0
-;	    MOVE.L  (A1),A1	; LN_PRED
-;	    MOVE.L  A0,(A1)
-;	    MOVE.L  A1,LN_PRED(A0)
-;	    ENDM
 
-        move.l  cb_SysBase(a5),a6
-        bsr.s   CloseLibs
+		; could close resource here:
+        ;move.l  cb_SysBase(a5),a6
+        ;bsr.s   CloseLibs
 
         move.l  a5,a1
         moveq   #0,d0
@@ -299,24 +245,6 @@ DoExpunge:
         movem.l (sp)+,d2/a5/a6
         rts
 
-;-----------------------------------------------------------------------
-
-;LibReserved:
-;        moveq   #0,d0
-;        rts
-
-;-----------------------------------------------------------------------
-
-CloseLibs:
-;        move.l  cb_GfxBase(a5),a1
-;        CALL    CloseLibrary
-
-;        move.l  cb_IntuitionBase(a5),a1
-;        CALL    CloseLibrary
-
-;        move.l  cb_UtilityBase(a5),a1
-;        CALL	CloseLibrary
-		rts
 ;-----------------------------------------------------------------------
 
    ; EndCode is a marker that show the end of your code.  Make sure it does not span

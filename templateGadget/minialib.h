@@ -10,6 +10,9 @@
  */
 
 #include <proto/utility.h>
+//#ifdef __VBCC__
+#include <proto/intuition.h>
+//#endif
 #include <intuition/classes.h>
 #include <intuition/classusr.h>
 #include <intuition/gadgetclass.h>
@@ -27,33 +30,28 @@
 // ULONG  __stdargs HookEntry( struct Hook *hookPtr, Object *obj, APTR message );
 // ULONG  __stdargs SetSuperAttrs( struct IClass *cl, Object *obj, ULONG tag1, ... );
 
-
-#ifdef __SASC
-#define AINLINE static __inline
-#else
-#define AINLINE static inline
-#endif
+#include "compilers.h"
 
 // CallHookPkt is in utility...
 extern struct Library *UtilityBase;
 
-AINLINE ULONG DoMethodA( Object *obj, Msg message ) {
+INLINE ULONG DoMethodA( Object *obj, Msg message ) {
     //   if (!obj || !message) return 0L;
    return CallHookPkt((struct Hook *) OCLASS(obj), obj, message);
 }
 
-AINLINE ULONG DoMethod( Object *obj, ULONG methodID, ... ) {
+INLINE ULONG DoMethod( Object *obj, ULONG methodID, ... ) {
     //   if (!obj) return 0L;
    return CallHookPkt((struct Hook *) OCLASS(obj), obj, (APTR)&methodID);
 }
-AINLINE ULONG DoSuperMethodA( struct IClass *cl, Object *obj, Msg message ) {
+INLINE ULONG DoSuperMethodA( struct IClass *cl, Object *obj, Msg message ) {
    return CallHookPkt((struct Hook *)cl->cl_Super, obj, message);
 }
-AINLINE ULONG DoSuperMethod( struct IClass *cl, Object *obj, ULONG methodID, ... ) {
+INLINE ULONG DoSuperMethod( struct IClass *cl, Object *obj, ULONG methodID, ... ) {
    return CallHookPkt((struct Hook *)cl->cl_Super, obj, (APTR)&methodID);
 }
 // assume cl is class of obj
-AINLINE ULONG SetSuperAttrs( struct IClass *cl, Object *obj, ULONG tag1, ... ) {
+INLINE ULONG SetSuperAttrs( struct IClass *cl, Object *obj, ULONG tag1, ... ) {
     struct opSet ops, *msg = &ops;
 
     ops.MethodID     = OM_SET;
@@ -66,15 +64,22 @@ AINLINE ULONG SetSuperAttrs( struct IClass *cl, Object *obj, ULONG tag1, ... ) {
 /*Boopsi support function that invokes the supplied message on the specified object,
  *  as though it were the specified class.
  */
- AINLINE ULONG CoerceMethodA( struct IClass *cl, Object *obj, Msg message )
- {
+INLINE ULONG CoerceMethodA( struct IClass *cl, Object *obj, Msg message )
+{
     if(!cl || !obj) return NULL;
     return CallHookPkt((struct Hook *) cl, obj, message);
- }
- AINLINE ULONG CoerceMethod( struct IClass *cl, Object *obj, ULONG methodID, ... )
- {
+}
+INLINE ULONG CoerceMethod( struct IClass *cl, Object *obj, ULONG methodID, ... )
+{
     if(!cl || !obj) return NULL;
     return CallHookPkt((struct Hook *)cl, obj, (APTR)&methodID);
- }
+}
+
+#ifdef __VBCC__
+INLINE APTR vbNewObject( struct IClass *classPtr, CONST_STRPTR classID, ULONG tag1, ... )
+{
+    return NewObjectA(classPtr,classID,(struct TagItem *)&tag1);
+}
+#endif
 
 #endif

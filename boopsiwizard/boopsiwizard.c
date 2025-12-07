@@ -8,6 +8,8 @@
 
 #include <intuition/screens.h>
 #include <intuition/icclass.h>
+#include <workbench/workbench.h>
+#include <workbench/startup.h>
 
 #include <proto/diskfont.h>
 #include <proto/exec.h>
@@ -39,6 +41,9 @@
 
 #include <proto/string.h>
 #include <gadgets/string.h>
+
+#include <proto/getfile.h>
+#include <gadgets/getfile.h>
 
 #include <proto/texteditor.h>
 #include <gadgets/texteditor.h>
@@ -91,6 +96,9 @@ struct Library *CheckBoxBase=NULL;
 struct Library *StringBase=NULL;
 struct Library *TextFieldBase=NULL;
 struct Library *RequesterBase=NULL;
+struct Library *GetFileBase=NULL;
+
+struct DiskObject *AppDiskObject = NULL;
 
 void cleanexit(const char *pmessage)
 {
@@ -130,6 +138,10 @@ typedef union MsgUnion
 #define GAD_CB_MAKEFILE 4
 #define GAD_CB_CMAKELIST 5
 
+#define GAD_GET_INCLUDEH 6
+#define GAD_GET_INCLUDEI 7
+
+
 #define GAD_START_SELECT_TEMPLATE 16
 
 
@@ -161,6 +173,10 @@ struct App
         Object* btGenerate;
 
             // status bar
+        Object *horizontallayoutB2;
+            Object *getH_gad;
+            Object *getI_gad;
+
         Object *horizontallayoutC;
         Object *bottombarlayout;
             Object* statusbarlabel;
@@ -340,6 +356,7 @@ static Object *populateTemplateList()
 
 int main(int argc, char **argv)
 {
+    struct Task *task;
     atexit(&exitclose);
     initTemplates(&guiNotifier);
 
@@ -394,17 +411,70 @@ int main(int argc, char **argv)
     if ( ! (TextFieldBase = OpenLibrary("gadgets/texteditor.gadget",44)))
         cleanexit("Can't open texteditor.gadget");
 
+    if ( ! (GetFileBase = OpenLibrary("gadgets/getfile.gadget",44)))
+        cleanexit("Can't open getfile.class");
+
     if ( ! (RequesterBase = OpenLibrary("requester.class",44)))
         cleanexit("Can't open requester.class");
 
-    if(!initAppModel())  cleanexit("Can't create app");
 
+
+    if(!initAppModel())  cleanexit("Can't create app");
 
     // = = = = = now that needed classes are loaded
     // = = = = = creates the instances...
 
     app->lockedscreen = LockPubScreen(NULL);
     if (!app->lockedscreen) cleanexit("Can't lock screen");
+
+    // amiga c startup magic to get exe name:
+    const char *exename=NULL;
+    if(argc>0) exename=argv[0];
+    else {
+        struct WBStartup *WBenchMsg = (struct WBStartup *)argv;
+        exename = WBenchMsg->sm_ArgList[0]->wa_Name;
+    }
+    // read o create icon
+    if(exename)
+    {
+        AppDiskObject = GetDiskObjectNew(exename); // can be null or not.
+    }
+
+
+// BOOL makeIcon(UBYTE *name, char **newtooltypes, char *newdeftool)
+//     {
+//     struct DiskObject *dobj;
+//     char *olddeftool;
+//     char **oldtooltypes;
+//     BOOL success = FALSE;
+
+//     if(dobj=GetDiskObject(name))
+//         {
+//         /* If file already has an icon, we will save off any fields we
+//          * need to update, update those fields, put the object, restore
+//          * the old field pointers and then free the object.  This will
+//          * preserve any custom imagery the user has, and the user's
+//          * current placement of the icon.  If your application does
+//          * not know where the user currently keeps your application,
+//          * you should not update his dobj->do_DefaultTool.
+//          */
+//          oldtooltypes = dobj->do_ToolTypes;
+//          olddeftool = dobj->do_DefaultTool;
+
+//          dobj->do_ToolTypes = newtooltypes;
+//          dobj->do_DefaultTool = newdeftool;
+
+//          success = PutDiskObject(name,dobj);
+
+//          /* we must restore the original pointers before freeing */
+//          dobj->do_ToolTypes = oldtooltypes;
+//          dobj->do_DefaultTool = olddeftool;
+//          FreeDiskObject(dobj);
+//          }
+//     /* Else, put our default icon */
+//     if(!success)  success = PutDiskObject(name,&projIcon);
+//     return(success);
+    }
 
     app->drawInfo = GetScreenDrawInfo(app->lockedscreen);
     // let's size according to font height.
@@ -622,6 +692,15 @@ int main(int argc, char **argv)
                      ICA_TARGET, (ULONG)AppInstance,     // app model will receive notifications.
                     TAG_END);
 
+
+                    Object* cbvbcc =  (Object *)NewObject( CHECKBOX_GetClass(), NULL,
+                        GA_DrawInfo,(ULONG) app->drawInfo,
+                        GA_Text,(ULONG)"VBCC vmakefile (1999,C98)",
+                        CHECKBOX_Checked,TRUE,
+                     GA_ID,GAD_CB_MAKEFILE,
+                     ICA_TARGET, (ULONG)AppInstance,     // app model will receive notifications.
+                    TAG_END);
+
                     Object* cbcmake =  (Object *)NewObject( CHECKBOX_GetClass(), NULL,
                         GA_DrawInfo,(ULONG) app->drawInfo,
                         GA_Text,(ULONG)"GCC6.5 CMakeList.txt (2011,C11)",
@@ -637,6 +716,7 @@ int main(int argc, char **argv)
                     LAYOUT_HorizAlignment, LALIGN_RIGHT,
                    LAYOUT_AddChild, cbsasc,
                    LAYOUT_AddChild, cbgcc,
+                   LAYOUT_AddChild, cbvbcc,
                    LAYOUT_AddChild, cbcmake,
                     TAG_DONE);
 
@@ -648,6 +728,63 @@ int main(int argc, char **argv)
                         // BUTTON_BevelStyle,BVS_NONE,
                         // BUTTON_Transparent, TRUE,
                                 TAG_END);
+
+ {
+
+        app->getH_gad = NewObject( GETFILE_GetClass(), NULL,
+                                GA_ID, GAD_GET_INCLUDEH,
+                                GA_RelVerify, TRUE,
+                                GETFILE_TitleText, "Select a NDK3.2 C .h include directory",
+                                GETFILE_ReadOnly, FALSE,
+                                GETFILE_DrawersOnly,TRUE,
+                            TAG_END);
+        Object *getH_gad_label =  NewObject( LABEL_GetClass(), NULL,
+                                LABEL_Text, "C .h Include dir (Include H)",
+                            TAG_END);
+
+        app->getI_gad = NewObject( GETFILE_GetClass(), NULL,
+                                GA_ID, GAD_GET_INCLUDEI,
+                                GA_RelVerify, TRUE,
+                                GETFILE_TitleText, "Select a NDK3.2 Assembler .i include directory (Include_I)",
+                                GETFILE_ReadOnly, FALSE,
+                                GETFILE_DrawersOnly,TRUE,
+                            TAG_END);
+        Object *getI_gad_label =  NewObject( LABEL_GetClass(), NULL,
+                                LABEL_Text, "Asm .i Include dir (Include I)",
+                            TAG_END);
+
+
+        app->horizontallayoutB2 =
+             (Object *)NewObject( LAYOUT_GetClass(), NULL,
+                    LAYOUT_Orientation, LAYOUT_ORIENT_VERT,
+                    LAYOUT_EvenSize, TRUE,
+                    LAYOUT_HorizAlignment, LALIGN_RIGHT,
+                    LAYOUT_BevelStyle, BVS_GROUP,
+
+                    LAYOUT_AddChild, app->getH_gad,
+                    CHILD_WeightedHeight, 0,
+                    CHILD_Label, getH_gad_label,
+
+                    LAYOUT_AddChild, app->getI_gad,
+                    CHILD_WeightedHeight, 0,
+                    CHILD_Label, getI_gad_label,
+
+                  //  CHILD_ScaleHeight,1, //%
+                   // CHILD_MaxHeight,app->fontHeight,
+                   // LAYOUT_SpaceInner, FALSE,
+//                   LAYOUT_AddChild, ospacer,
+//                CHILD_WeightedWidth,1,
+
+                 //     LAYOUT_AddChild, targetcblayout,
+                 // CHILD_WeightedWidth,3,
+
+                 //    LAYOUT_AddChild, app->btGenerate,
+                 // CHILD_WeightedWidth,0,
+                  //  LAYOUT_AddChild, app->labelValues,
+                   // LAYOUT_AddChild, app->disablecheckbox,
+                  //  GA_Height,app->fontHeight,
+                    TAG_DONE);
+ }
 
         app->horizontallayoutC =
              (Object *)NewObject( LAYOUT_GetClass(), NULL,
@@ -727,6 +864,8 @@ int main(int argc, char **argv)
                 CHILD_WeightedHeight,0,
             LAYOUT_AddChild, app->horizontallayoutB,
                 CHILD_WeightedHeight,4,
+            LAYOUT_AddChild, app->horizontallayoutB2,
+                CHILD_WeightedHeight,0,
             LAYOUT_AddChild, app->horizontallayoutC,
                 CHILD_WeightedHeight,0,
             LAYOUT_AddChild, app->bottombarlayout,
@@ -834,6 +973,12 @@ int main(int argc, char **argv)
                         } else if(gid == GAD_BUTTON_ABOUT)
                         {
                             openAboutReq();
+                        } else if(gid == GAD_GET_INCLUDEH)
+                        {
+                            DoMethod((Object *)app->getH_gad , GFILE_REQUEST , app->win);
+                        } else if(gid == GAD_GET_INCLUDEI)
+                        {
+                            DoMethod((Object *)app->getI_gad , GFILE_REQUEST , app->win);
                         }
                         break;
                     }
@@ -914,6 +1059,10 @@ void exitclose(void)
     }
 
     closeAppModel(); // thi is meant to close app implicitely, If i'm correct...
+
+    if(AppDiskObject) FreeDiskObject(AppDiskObject);
+
+    if(GetFileBase) CloseLibrary(GetFileBase);
     if(RequesterBase) CloseLibrary(RequesterBase);
     if(TextFieldBase) CloseLibrary(TextFieldBase);
     if(StringBase) CloseLibrary(StringBase);
@@ -1055,6 +1204,7 @@ void generate()
                         "Everything was named accordingly.\n"
                         "You may open a shell there and type:\n"
                         " smake for sas-c, or make for gcc.\n"
+                        " or make -f vmakefile for vbcc.\n"
                         "There is also a CMakeLists.txt for cross-compilation.\n"
                         "binaries will then be generated in build-xxx dirs.",report.destinationDir);
             SetAttrs(app->reportReq,REQ_BodyText,(ULONG)&temp[0],TAG_END);

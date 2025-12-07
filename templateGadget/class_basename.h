@@ -7,7 +7,7 @@
 #include <exec/types.h>
 #include <intuition/gadgetclass.h>
 #include <intuition/classes.h>
-
+            #include <inline/macros.h>
 #define VERSION_BASENAME 1
 #define BaseName_SUPERCLASS_ID "gadgetclass"
 
@@ -35,6 +35,11 @@
            #pragma libcall BaseNameBase BASENAME_GetClass 1e 00
             // ... could have other functions here
         # endif
+        #if defined(__VBCC__)
+            Class * __BASENAME_GetClass(__reg("a6") void *)="\tjsr\t-$1e(a6)";
+            #define BASENAME_GetClass() __BASENAME_GetClass(BaseNameBase)
+			// ... could have other functions here			
+        #endif
     #endif /* _NO_INLINE */
 
     #ifndef __NOLIBBASE__

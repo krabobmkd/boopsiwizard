@@ -5,8 +5,8 @@
  * Tested so far with SASC 6.5, GCC 2.95 Amiga, GCC 6.5 "Bebbo"
  */
 #if defined(__VBCC__)
-    #define ASM __asm
-    #define INLINE static __inline
+    #define ASM
+    #define INLINE static inline
     #define REG(reg,arg) __reg(#reg) arg
     #define SAVEDS __saveds
 #elif defined(__SASC)

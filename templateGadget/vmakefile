@@ -1,16 +1,21 @@
-# this is the makefile for all Amiga GCC2.x
-# like ADE on aminet.
-# Update your compiler os-include and os-lib directories with recent NDK3.2 include and lib,
-# doing an overriding copy.
-# use with command "make"
+# this is the makefile for vbcc
+# get vbcc from http://sun.hasenbraten.de/vbcc/   ... vbcc_bin_amigaos68k.lha
+# Update your compiler os-include and os-lib directories with recent NDK3.2 
+# instructions at: https://developer.amigaos3.net/article/11-ndk-setup-vbcc-compiler
+# also download some "make" command from aminet, or the one from ADE on aminet.
+#
+# compile with >make -f vmakefile
 
-CC = gcc
-BUILDDIR = build-gcc
-BUILDLIBDIR = build-gcc/libobjs
-BUILDEXEDIR = build-gcc/exeobjs
+CC = vc
+AS = vasmm68k_mot
+BUILDDIR = build-vbcc
+BUILDLIBDIR = build-vbcc/libobjs
+BUILDEXEDIR = build-vbcc/exeobjs
 
-ASMFLAGS = I=include: 
-CFLAGS = -m68000 -Os -noixemul
+# set -I to your NDK3.2 Include_I
+ASMFLAGS = -phxass -Fhunk -I Work:Code/NDK32/Include_I 
+# options with vbccm68k syntax 
+CFLAGS = +aos68k -cpu=68020
 
 BINARIES = \
  $(BUILDDIR)/basename.gadget\
@@ -55,30 +60,30 @@ $(BUILDDIR)Static:
 # - - - - - - - - 
 
 $(BUILDLIBDIR)/%.c.o: %.c $(BUILDLIBDIR) $(HEADERS)
-	$(CC) -c -o $@ $< $(CFLAGS) -ffreestanding -nostartfiles
+	$(CC) -c -o $@ $< $(CFLAGS) -nostdlib
 
 $(BUILDEXEDIR)/%.c.o: %.c $(BUILDEXEDIR) $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(BUILDDIR)Static/%.c.o: %.c $(BUILDDIR) $(HEADERS)
-	$(CC) -c -o $@ $< $(CFLAGS) -DBASENAME_STATICLINK=1 -DUSE_DEBUG_BDBPRINT=1
+	$(CC) -c -o $@ $< $(CFLAGS) -DBASENAME_STATICLINK=1 -DUSE_DEBUG_BDBPRINT=1 
 
 
 $(BUILDLIBDIR)/%.s.o: %.s $(BUILDLIBDIR) $(HEADERS)
-	# use phxass as assembler
-	phxass $< TO $@ $(ASMFLAGS)
-	#gcc assembler will not make it.
-	#as $< -o $@ -m68000
+	$(AS) $< -o $@ $(ASMFLAGS)
 # - - - - - - - - - for .gadget
 
 $(BUILDDIR)/basename.gadget: $(GADGETOBJS)
-	$(CC) -o $@ $(GADGETOBJS) $(CFLAGS) -ffreestanding -nostartfiles  -Wl,-e,__start
+
+	vlink -bamigahunk -x -Bstatic -C$(CC) -nostdlib -Z -mrel $(GADGETOBJS) -o $@   
+	# mrel for section merging
+#	$(CC) -o $@ $(GADGETOBJS) $(CFLAGS) -ld=vlink -x -Bstatic -C$(CC) -nostdlib -Lvlibos3: vlibos3:startup.o %s %s -lvc -o %s
+#	-ffreestanding -nostartfiles  -Wl,-e,__start
 
 # - - - - - - - - - executable to test gadget
-
-$(BUILDDIR)/basenameTest: $(BUILDEXEDIR)/basenametest.c.o
-	$(CC) -o $@ $(CFLAGS) $(BUILDEXEDIR)/basenametest.c.o  -s
-
+# $(BUILDEXEDIR)/basenametest.c.o
+$(BUILDDIR)/basenameTest: basenametest.c
+	vc $(CFLAGS) basenametest.c -o $@ -lamiga
 
 # - - - - - - - - -  static test case executable
 
