@@ -58,8 +58,9 @@
 
 #include "templates.h"
 
-#include "datatypebm.h"
 
+//#include "datatypebm.h"
+#include "tooltypepref.h"
 
 // trick to have data
 // static DtBm dtbmLogo = {0};
@@ -97,8 +98,6 @@ struct Library *StringBase=NULL;
 struct Library *TextFieldBase=NULL;
 struct Library *RequesterBase=NULL;
 struct Library *GetFileBase=NULL;
-
-struct DiskObject *AppDiskObject = NULL;
 
 void cleanexit(const char *pmessage)
 {
@@ -428,52 +427,19 @@ int main(int argc, char **argv)
     if (!app->lockedscreen) cleanexit("Can't lock screen");
 
     // amiga c startup magic to get exe name:
-    const char *exename=NULL;
-    if(argc>0) exename=argv[0];
-    else {
-        struct WBStartup *WBenchMsg = (struct WBStartup *)argv;
-        exename = WBenchMsg->sm_ArgList[0]->wa_Name;
-    }
-    // read o create icon
-    if(exename)
     {
-        AppDiskObject = GetDiskObjectNew(exename); // can be null or not.
-    }
-
-
-// BOOL makeIcon(UBYTE *name, char **newtooltypes, char *newdeftool)
-//     {
-//     struct DiskObject *dobj;
-//     char *olddeftool;
-//     char **oldtooltypes;
-//     BOOL success = FALSE;
-
-//     if(dobj=GetDiskObject(name))
-//         {
-//         /* If file already has an icon, we will save off any fields we
-//          * need to update, update those fields, put the object, restore
-//          * the old field pointers and then free the object.  This will
-//          * preserve any custom imagery the user has, and the user's
-//          * current placement of the icon.  If your application does
-//          * not know where the user currently keeps your application,
-//          * you should not update his dobj->do_DefaultTool.
-//          */
-//          oldtooltypes = dobj->do_ToolTypes;
-//          olddeftool = dobj->do_DefaultTool;
-
-//          dobj->do_ToolTypes = newtooltypes;
-//          dobj->do_DefaultTool = newdeftool;
-
-//          success = PutDiskObject(name,dobj);
-
-//          /* we must restore the original pointers before freeing */
-//          dobj->do_ToolTypes = oldtooltypes;
-//          dobj->do_DefaultTool = olddeftool;
-//          FreeDiskObject(dobj);
-//          }
-//     /* Else, put our default icon */
-//     if(!success)  success = PutDiskObject(name,&projIcon);
-//     return(success);
+        const char *exename=NULL;
+        if(argc>0) exename=argv[0];
+        else {
+            struct WBStartup *WBenchMsg = (struct WBStartup *)argv;
+            exename = WBenchMsg->sm_ArgList[0].wa_Name;
+        }
+        // read o create icon
+        if(exename)
+        {
+        printf("exe:%s\n",exename);
+            ToolTypePrefs_Init(exename);
+        }
     }
 
     app->drawInfo = GetScreenDrawInfo(app->lockedscreen);
@@ -730,6 +696,10 @@ int main(int argc, char **argv)
                                 TAG_END);
 
  {
+        const char *include_h = ToolTypePrefs_Get("INCLUDE_H");
+        const char *include_i = ToolTypePrefs_Get("INCLUDE_I");
+        if(!include_h) include_h = "NDK:Include_H";
+        if(!include_i) include_i = "NDK:Include_I";
 
         app->getH_gad = NewObject( GETFILE_GetClass(), NULL,
                                 GA_ID, GAD_GET_INCLUDEH,
@@ -737,6 +707,7 @@ int main(int argc, char **argv)
                                 GETFILE_TitleText, "Select a NDK3.2 C .h include directory",
                                 GETFILE_ReadOnly, FALSE,
                                 GETFILE_DrawersOnly,TRUE,
+                                GETFILE_Drawer,include_h,
                             TAG_END);
         Object *getH_gad_label =  NewObject( LABEL_GetClass(), NULL,
                                 LABEL_Text, "C .h Include dir (Include H)",
@@ -748,6 +719,7 @@ int main(int argc, char **argv)
                                 GETFILE_TitleText, "Select a NDK3.2 Assembler .i include directory (Include_I)",
                                 GETFILE_ReadOnly, FALSE,
                                 GETFILE_DrawersOnly,TRUE,
+                                GETFILE_Drawer,include_i,
                             TAG_END);
         Object *getI_gad_label =  NewObject( LABEL_GetClass(), NULL,
                                 LABEL_Text, "Asm .i Include dir (Include I)",
@@ -1021,10 +993,28 @@ void guiNotifier(int loglevel, const char *log)
 
 }
 
+void updatePrefsFromUi()
+{
+    if(app->getH_gad)
+    {
+        const char *n=NULL;
+        GetAttr(GETFILE_Drawer, app->getH_gad,(ULONG) &n);
+        if(n) ToolTypePrefs_Set("INCLUDE_H",n);
+    }
+    if(app->getI_gad)
+    {
+        const char *n=NULL;
+        GetAttr(GETFILE_Drawer, app->getI_gad,(ULONG) &n);
+        if(n) ToolTypePrefs_Set("INCLUDE_I",n);
+    }
+
+}
+
 void exitclose(void)
 {
     if(app)
     {
+        updatePrefsFromUi();
         if(app->TemplateButtonsList) FreeVec(app->TemplateButtonsList);
         /* Disposing of the window object will also close the
          * window if it is already opened and it will dispose of
@@ -1060,7 +1050,9 @@ void exitclose(void)
 
     closeAppModel(); // thi is meant to close app implicitely, If i'm correct...
 
-    if(AppDiskObject) FreeDiskObject(AppDiskObject);
+    ToolTypePrefs_Save();
+    ToolTypePrefs_Close();
+
 
     if(GetFileBase) CloseLibrary(GetFileBase);
     if(RequesterBase) CloseLibrary(RequesterBase);

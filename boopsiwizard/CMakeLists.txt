@@ -30,7 +30,8 @@ add_executable(BoopsiWizard
 		templates.h
 		templates.c
 		template_extract.c
-
+		tooltypepref.c
+		tooltypepref.h
 		#datatypebm.c
 		#datatypebm.h
 		#bpwizard_png.c

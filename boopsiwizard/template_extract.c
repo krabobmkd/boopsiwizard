@@ -11,9 +11,11 @@
 
 #include <dos/dos.h>
 
+#include "tooltypepref.h"
+
 /**
     almost same thing as unzipping...
-    almost: we replace names also.
+    almost: we replace names also.
 */
 static const char *errorstring=NULL;
 static const char *errorstringmem="No mem";
@@ -239,11 +241,18 @@ int replaceWrite(const char *originalbin, ULONG origbsize,
      return 1;
     }
 
+        const char *include_h = ToolTypePrefs_Get("INCLUDE_H");
+        const char *include_i = ToolTypePrefs_Get("INCLUDE_I");
+        if(!include_h) include_h = "NDK:Include_H";
+        if(!include_i) include_i = "NDK:Include_I";
+
     // - - - -
     sReplace replacers[]={
         {"basename",lowName},
         {"BaseName",upName},
         {"BASENAME",MajName},
+        {"NDK:Include_H",include_h},
+        {"NDK:Include_I",include_i},
         {NULL,NULL}
     };
     // got to remap file name

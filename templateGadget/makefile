@@ -9,8 +9,8 @@ BUILDDIR = build-gcc
 BUILDLIBDIR = build-gcc/libobjs
 BUILDEXEDIR = build-gcc/exeobjs
 
-ASMFLAGS = I=include: 
-CFLAGS = -m68000 -Os -noixemul
+ASMFLAGS = I=NDK:Include_I
+CFLAGS = -m68000 -Os -noixemul -INDK:Include_H
 
 BINARIES = \
  $(BUILDDIR)/basename.gadget\
