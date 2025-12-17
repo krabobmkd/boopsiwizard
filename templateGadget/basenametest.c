@@ -292,7 +292,7 @@ int main(int argc, char **argv)
 
 #ifdef BASENAME_STATICLINK
 
-    if(BaseNameStaticInit()) cleanexit("Can't create private class");
+    if(!BaseNameStaticInit()) cleanexit("Can't create private class");
 #else
     if ( ! (BaseNameBase = OpenLibrary("basename.gadget",VERSION_BASENAME)))
         cleanexit("Can't open basename.gadget");
