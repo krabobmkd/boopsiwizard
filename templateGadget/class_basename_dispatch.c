@@ -36,6 +36,23 @@
  */
 #include "bdbprintf.h"
 
+/** for dispatcher, very wise use of union.
+ *  each  struct also starts with MethodID.
+ * and they are the very parameters for each methods.
+ */
+typedef union MsgUnion
+{
+  ULONG  MethodID;
+  // from classusr.h or gadgetclass.h, all starts with MethodID.
+  struct opSet        opSet;
+  struct opUpdate     opUpdate;
+  struct opGet        opGet;
+  struct gpHitTest    gpHitTest;
+  struct gpRender     gpRender;
+  struct gpInput      gpInput;
+  struct gpGoInactive gpGoInactive;
+  struct gpLayout     gpLayout;
+} *Msgs;
 
 /** WATCH OUT ! boopsi docs says:
 *  "the rkmmodelclass dispatcher must be able to run on Intuition's context,

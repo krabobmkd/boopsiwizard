@@ -17,6 +17,27 @@
 
 #include "class_basename_private.h"
 
+
+/** this is the struct that is the extended struct Library
+ * That is created with OpenLibrary().
+ * But as it just manages a BOOPSI class there are just the open/close functions.
+ * which themselves only manages registering the class with MakeClass()/AddClass()
+ * versioning, and closing itself. This is *not* the boopsi class definition which is up there.
+ * So it doesnt have to evolve, and can keep same name for each projects.
+ * That said, layout.gadget has tool methods like any library.
+ * must be mirrored to equivalent in classinit.s
+ */
+struct ExtClassLib
+{
+    struct ClassLibrary cb_ClassLibrary;
+
+    APTR  cb_SysBase; // this is passed as LibInit
+    APTR  cb_SegList; // this is passed at OpenLib and needed at expunge.
+    // note: old libraries examples adds bases for graphics/intuition/utility after this
+    // but C compiler will only search then in globals...
+};
+
+
 #ifdef USE_BEVEL_FRAME
     #include <proto/bevel.h>
 #endif
@@ -111,6 +132,8 @@ void BaseName_CloseLibs_Dependencies(void)
     BevelBase = NULL;
 #endif
 }
+
+union MsgUnion;
 //==========================================================================================
 // does not need to be exact, we just want the function pointer:
 ULONG ASM SAVEDS BaseName_Dispatcher(

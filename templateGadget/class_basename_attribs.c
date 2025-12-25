@@ -60,10 +60,6 @@ ULONG BaseName_GetAttr(Class *C, struct Gadget *Gad, struct opGet *Get)
   return(retval);
 }
 
-
-
-ULONG Redraw[]={0, GREDRAW_UPDATE, GREDRAW_REDRAW};
-
 ULONG BaseName_SetAttrs(Class *C, struct Gadget *Gad, struct opSet *Set)
 {
   struct TagItem *tag;

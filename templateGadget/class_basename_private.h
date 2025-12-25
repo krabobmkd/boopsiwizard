@@ -61,23 +61,6 @@ ULONG BaseName_Domain(Class *C, struct Gadget *Gad, struct gpDomain *D);
 
 // - - - - -- -
 
-/** for dispatcher, very wise use of union.
- *  each  struct also starts with MethodID.
- * and they are the very parameters for each methods.
- */
-typedef union MsgUnion
-{
-  ULONG  MethodID;
-  // from classusr.h or gadgetclass.h, all starts with MethodID.
-  struct opSet        opSet;
-  struct opUpdate     opUpdate;
-  struct opGet        opGet;
-  struct gpHitTest    gpHitTest;
-  struct gpRender     gpRender;
-  struct gpInput      gpInput;
-  struct gpGoInactive gpGoInactive;
-  struct gpLayout     gpLayout;
-} *Msgs;
 
 /**
 * This is to publish ou data when they change.
@@ -85,25 +68,6 @@ typedef union MsgUnion
 * Some examples use only one Notify which send all attribs.
 */
 ULONG BaseName_NotifyCoords(Class *C, struct Gadget *Gad, struct GadgetInfo	*GInfo);
-
-/** this is the struct that is the extended struct Library
- * That is created with OpenLibrary().
- * But as it just manages a BOOPSI class there are just the open/close functions.
- * which themselves only manages registering the class with MakeClass()/AddClass()
- * versioning, and closing itself. This is *not* the boopsi class definition which is up there.
- * So it doesnt have to evolve, and can keep same name for each projects.
- * That said, layout.gadget has tool methods like any library.
- * must be mirrored to equivalent in classinit.s
- */
-struct ExtClassLib
-{
-    struct ClassLibrary cb_ClassLibrary;
-
-    APTR  cb_SysBase; // this is passed as LibInit
-    APTR  cb_SegList; // this is passed at OpenLib and needed at expunge.
-    // note: old libraries examples adds bases for graphics/intuition/utility after this
-    // but C compiler will only search then in globals...
-};
 
 #ifdef __cplusplus
 }
