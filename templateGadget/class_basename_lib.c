@@ -199,15 +199,15 @@ struct IClass   *BASENAME_GetClass()
 // just use this one once when static link
 int BaseNameStaticInit()
 { 
-   if(!BaseName_OpenLibs_Dependencies()) return 1;
+   if(!BaseName_OpenLibs_Dependencies()) return(0);
     if(BaseNameClassPtr=MakeClass(NULL,BaseNameSuperClassID,0,sizeof(BaseName),0))
     {
       BaseNameClassPtr->cl_Dispatcher.h_Entry=(REHOOKFUNC)BaseName_Dispatcher;
      // do not AddClass() when static, no need to publish, BaseNameClassPtr will be enough.
       /* Success */
-      return(0);
+      return(1);
     }
-    return 1;
+    return (0);
 }
 
 void BaseNameStaticClose()
