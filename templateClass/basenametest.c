@@ -561,6 +561,11 @@ void exitclose(void)
             }
         }
 
+        if(app->app_port)
+        {
+            DeleteMsgPort(app->app_port);
+            app->app_port = NULL;
+        }
         if(app->drawInfo) FreeScreenDrawInfo(app->lockedscreen, app->drawInfo);
         if(app->lockedscreen) UnlockPubScreen(0, app->lockedscreen);
 
