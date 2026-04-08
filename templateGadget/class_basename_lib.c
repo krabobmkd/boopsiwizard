@@ -58,15 +58,58 @@ const char BaseNameSuperClassID[]=BaseName_SUPERCLASS_ID;
 
 // note: if other boopsi classes are dependences, they need to be opened here.
 #ifndef BASENAME_STATICLINK
+    void BaseName_CloseLibs(void);
     BOOL BaseName_OpenLibs(void)
     {
       // if here, sysbase is already acquired from LibInit.
       //NO: if(!SysBase) SysBase = *(( struct ExecBase **)4);
-       if(!DOSBase)  DOSBase = (struct DosLibrary *)OpenLibrary("dos.library",1);
-       if(!IntuitionBase)  IntuitionBase = (struct IntuitionBase *) OpenLibrary("intuition.library",39);
-       if(!GfxBase) GfxBase = (struct GfxBase *) OpenLibrary("graphics.library",39);
-       if(!UtilityBase) UtilityBase = OpenLibrary("utility.library",39);
-       if(!LayersBase) LayersBase = OpenLibrary("layers.library",39);
+
+       if(!DOSBase)
+       {
+           DOSBase = (struct DosLibrary *)OpenLibrary("dos.library",1);
+           if(!DOSBase) return FALSE;
+       }
+
+       if(!IntuitionBase)
+       {
+           IntuitionBase = (struct IntuitionBase *)OpenLibrary("intuition.library",39);
+           if(!IntuitionBase)
+           {
+               BaseName_CloseLibs();
+               return FALSE;
+           }
+       }
+
+       if(!GfxBase)
+       {
+           GfxBase = (struct GfxBase *)OpenLibrary("graphics.library",39);
+           if(!GfxBase)
+           {
+               BaseName_CloseLibs();
+               return FALSE;
+           }
+       }
+
+       if(!UtilityBase)
+       {
+           UtilityBase = OpenLibrary("utility.library",39);
+           if(!UtilityBase)
+           {
+               BaseName_CloseLibs();
+               return FALSE;
+           }
+       }
+
+       if(!LayersBase)
+       {
+           LayersBase = OpenLibrary("layers.library",39);
+           if(!LayersBase)
+           {
+               BaseName_CloseLibs();
+               return FALSE;
+           }
+       }
+
     #if defined(__GNUC__) && (__GNUC__ < 3)
         __UtilityBase = UtilityBase; // amiga gcc2.95 with noixemul and 68000, and our gadget startup needs that.
     #endif
@@ -75,13 +118,36 @@ const char BaseNameSuperClassID[]=BaseName_SUPERCLASS_ID;
 
     void BaseName_CloseLibs(void)
     {
-        if(LayersBase) CloseLibrary(LayersBase);
-        if(DOSBase) CloseLibrary((struct Library *)DOSBase);
-        if(UtilityBase) CloseLibrary(UtilityBase);
-        if(GfxBase) CloseLibrary((struct Library *)GfxBase);
-        if(IntuitionBase) CloseLibrary((struct Library *)IntuitionBase);
-    }
+        if(LayersBase)
+        {
+            CloseLibrary(LayersBase);
+            LayersBase = NULL;
+        }
 
+        if(DOSBase)
+        {
+            CloseLibrary((struct Library *)DOSBase);
+            DOSBase = NULL;
+        }
+
+        if(UtilityBase)
+        {
+            CloseLibrary(UtilityBase);
+            UtilityBase = NULL;
+        }
+
+        if(GfxBase)
+        {
+            CloseLibrary((struct Library *)GfxBase);
+            GfxBase = NULL;
+        }
+
+        if(IntuitionBase)
+        {
+            CloseLibrary((struct Library *)IntuitionBase);
+            IntuitionBase = NULL;
+        }
+    }
 #endif
 BOOL BaseName_OpenLibs_Dependencies(void)
 {
