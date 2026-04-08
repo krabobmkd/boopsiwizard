@@ -438,6 +438,7 @@ int main(int argc, char **argv)
 
 
     app->app_port = CreateMsgPort();
+    if(!app->app_port) cleanexit("can't create app port");
 
     /* Create the window object. */
     app->window_obj = (Object *)NewObject( WINDOW_GetClass(), NULL,
