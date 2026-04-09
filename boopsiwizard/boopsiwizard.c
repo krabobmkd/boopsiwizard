@@ -227,8 +227,12 @@ int initAppModel(void)
     AppModelClass->cl_Dispatcher.h_Entry = (REHOOKFUNC) &AppModelDispatch;
 
     AppInstance = (Object *)NewObject( AppModelClass, NULL, TAG_DONE);
-    if(!AppInstance) return 0;
-
+    if(!AppInstance)
+    {
+        FreeClass(AppModelClass);
+        AppModelClass = NULL;
+        return 0;
+    }
     return 1;
 }
 void closeAppModel(void)
