@@ -6,15 +6,15 @@ A wizard to create AmigaOS3 C Project for Amiga specific  class, gadget, libs , 
 
 ![A screenshot of the wizard, and the generated project compiled](boopsiwiz.png)
 
- Beta Version, but fully fonctionnal, so this may already help a lot.
+ Beta Version, but fully functional, so this may already help a lot.
  Templates are defined under directory "templates" with a json and a zip each.
 
-First: this is not part of official Amiga NDK, but is an opensource effort from individual developpers, with call to participation, at https://github.com/krabobmkd/boopsiwizard
+First: this is not part of official Amiga NDK, but is an opensource effort from individual developers, with call to participation, at https://github.com/krabobmkd/boopsiwizard
 
 
- A lot of aspect of Amiga OS development are difficult to set up, and setting a simple project for a library, class, gadget, datatype, commodity project, for a given C compiler, is cryptic, and can take days if not months. This tool is intended to generate instantly working project with their makefiles, able to generate classes (and hopefully one day libraries) even when a compiler offers no straightforward way to do that - like GCC -, by assembling and linking specific startups, in "no standard C environement" modes. This project aims as many OS3 compilers as possible.
+ A lot of aspect of Amiga OS development are difficult to set up, and setting a simple project for a library, class, gadget, datatype, commodity project, for a given C compiler, is cryptic, and can take days if not months. This tool is intended to generate instantly working project with their makefiles, able to generate classes (and hopefully one day libraries) even when a compiler offers no straightforward way to do that - like GCC -, by assembling and linking specific startups, in "no standard C environment" modes. This project aims as many OS3 compilers as possible.
  
- There is only 2 templates for the moment: 
+ There are only two templates for the moment: 
  - "Paint Gadget" will generate a BOOPSI gadget that draws something, resize, react to attributes change, and send updates event from clicks.
  - "Class Gadget" defines a simple BOOPSI class, a basic model class, not a gadget.
 
@@ -42,7 +42,7 @@ This also work for GCC2.95 from package ADE on aminet, with directory "os-includ
 
  Class and Gadget templates are generated in 2 forms: the shared .class or .gadget, with a Test use case using them, but also a "statically linked" version, with class kept private and not published with AddClass(), all using the same sources. So that way you can develop your class the static-private way, and one day, if needed, switch to a publishable version that can be shared: no trouble, the project is already set up for this !
  
- Also if you wonder "what to do next" after the poject is generated, search for tag "DEVTODO" in the comments, it will guide you through your development. (ADE users will be able to type a good old: ">grep -ir "DEVTODO" .")
+ Also if you wonder "what to do next" after the project is generated, search for tag "DEVTODO" in the comments, it will guide you through your development. (ADE users will be able to type a good old: >`grep -ir DEVTODO`)
  
  The templates code proposed here will try to be the more compliant possible with official Amiga guidelines, but may not be 100% compliant. You are loudly welcome to make any suggestion on the code at:
   https://github.com/krabobmkd/boopsiwizard/issues
@@ -69,4 +69,3 @@ This also work for GCC2.95 from package ADE on aminet, with directory "os-includ
  BOOPSI is a trademark of... I'm not sure who, but it's a trademark. In "BoopsiWizard", note letter case differs. 
 
   License for BoopsiWizard is LGPL2.1 . Yeah, that means you can both fork it, in which case you have to publish sources, or include it in commercial project as long as it's told were it comes from and it comes with its licence.
- 
