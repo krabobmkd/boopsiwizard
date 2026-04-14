@@ -14,7 +14,7 @@ First: this is not part of official Amiga NDK, but is an opensource effort from 
 
  A lot of aspect of Amiga OS development are difficult to set up, and setting a simple project for a library, class, gadget, datatype, commodity project, for a given C compiler, is cryptic, and can take days if not months. This tool is intended to generate instantly working project with their makefiles, able to generate classes (and hopefully one day libraries) even when a compiler offers no straightforward way to do that - like GCC -, by assembling and linking specific startups, in "no standard C environment" modes. This project aims as many OS3 compilers as possible.
  
- There is only 2 templates for the moment: 
+ There are only two templates for the moment: 
  - "Paint Gadget" will generate a BOOPSI gadget that draws something, resize, react to attributes change, and send updates event from clicks.
  - "Class Gadget" defines a simple BOOPSI class, a basic model class, not a gadget.
 
@@ -69,4 +69,3 @@ This also work for GCC2.95 from package ADE on aminet, with directory "os-includ
  BOOPSI is a trademark of... I'm not sure who, but it's a trademark. In "BoopsiWizard", note letter case differs. 
 
   License for BoopsiWizard is LGPL2.1 . Yeah, that means you can both fork it, in which case you have to publish sources, or include it in commercial project as long as it's told were it comes from and it comes with its licence.
- 
